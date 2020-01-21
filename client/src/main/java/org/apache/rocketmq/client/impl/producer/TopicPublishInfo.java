@@ -22,12 +22,12 @@ import org.apache.rocketmq.client.common.ThreadLocalIndex;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
-
+// Jason主题路由信息
 public class TopicPublishInfo {
-    private boolean orderTopic = false;
+    private boolean orderTopic = false;// 是否顺序消息
     private boolean haveTopicRouterInfo = false;
-    private List<MessageQueue> messageQueueList = new ArrayList<MessageQueue>();
-    private volatile ThreadLocalIndex sendWhichQueue = new ThreadLocalIndex();
+    private List<MessageQueue> messageQueueList = new ArrayList<MessageQueue>();// 主题的消息队列
+    private volatile ThreadLocalIndex sendWhichQueue = new ThreadLocalIndex();// 每选择一次消息队列 值+1
     private TopicRouteData topicRouteData;
 
     public boolean isOrderTopic() {
@@ -65,9 +65,9 @@ public class TopicPublishInfo {
     public void setHaveTopicRouterInfo(boolean haveTopicRouterInfo) {
         this.haveTopicRouterInfo = haveTopicRouterInfo;
     }
-
+// lastBrokerName 上次选择的执行发送消息失败的broker
     public MessageQueue selectOneMessageQueue(final String lastBrokerName) {
-        if (lastBrokerName == null) {
+        if (lastBrokerName == null) {// 第一次选择消息队列 lastBrokerName肯定是空
             return selectOneMessageQueue();
         } else {
             int index = this.sendWhichQueue.getAndIncrement();
@@ -76,7 +76,7 @@ public class TopicPublishInfo {
                 if (pos < 0)
                     pos = 0;
                 MessageQueue mq = this.messageQueueList.get(pos);
-                if (!mq.getBrokerName().equals(lastBrokerName)) {
+                if (!mq.getBrokerName().equals(lastBrokerName)) {// 规避上次的broker. 该算法存在的问题:如果宕机broker有多个队列, 怎么彻底规避改broker?
                     return mq;
                 }
             }
@@ -85,8 +85,8 @@ public class TopicPublishInfo {
     }
 
     public MessageQueue selectOneMessageQueue() {
-        int index = this.sendWhichQueue.getAndIncrement();
-        int pos = Math.abs(index) % this.messageQueueList.size();
+        int index = this.sendWhichQueue.getAndIncrement();// 自增
+        int pos = Math.abs(index) % this.messageQueueList.size();// 取模
         if (pos < 0)
             pos = 0;
         return this.messageQueueList.get(pos);

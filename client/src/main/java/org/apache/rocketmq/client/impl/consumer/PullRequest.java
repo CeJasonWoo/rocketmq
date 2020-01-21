@@ -17,13 +17,13 @@
 package org.apache.rocketmq.client.impl.consumer;
 
 import org.apache.rocketmq.common.message.MessageQueue;
-
+// Jason PullMessageService拿到PullRequest才会执行拉取消息任务
 public class PullRequest {
     private String consumerGroup;
-    private MessageQueue messageQueue;
-    private ProcessQueue processQueue;
-    private long nextOffset;
-    private boolean lockedFirst = false;
+    private MessageQueue messageQueue;// Jason 待拉取消费队列
+    private ProcessQueue processQueue;// Jason 消息处理队列  TODO Jason 从broker拉取消息->processQueue->消费线程池
+    private long nextOffset;// Jason 待拉取的messageQueue偏移量
+    private boolean lockedFirst = false;// Jason 锁定??
 
     public boolean isLockedFirst() {
         return lockedFirst;

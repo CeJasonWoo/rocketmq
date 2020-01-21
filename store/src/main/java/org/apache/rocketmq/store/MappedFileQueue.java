@@ -28,23 +28,23 @@ import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
-
+// Jason 映射文件队列 | 文件夹
 public class MappedFileQueue {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
     private static final InternalLogger LOG_ERROR = InternalLoggerFactory.getLogger(LoggerName.STORE_ERROR_LOGGER_NAME);
 
     private static final int DELETE_FILES_BATCH_MAX = 10;
 
-    private final String storePath;
+    private final String storePath;// 存储目录
 
-    private final int mappedFileSize;
+    private final int mappedFileSize;// 单个文件存储大小
 
-    private final CopyOnWriteArrayList<MappedFile> mappedFiles = new CopyOnWriteArrayList<MappedFile>();
+    private final CopyOnWriteArrayList<MappedFile> mappedFiles = new CopyOnWriteArrayList<MappedFile>();// 映射文件集合
 
-    private final AllocateMappedFileService allocateMappedFileService;
-
-    private long flushedWhere = 0;
-    private long committedWhere = 0;
+    private final AllocateMappedFileService allocateMappedFileService;// MappedFile映射文件创建服务
+    // TODO: 2019/10/25 JasonWoo 指针
+    private long flushedWhere = 0;// 当前刷盘指针 => 该指针之前的所有数据全部持久化到磁盘
+    private long committedWhere = 0;// 当前数据提交指针 => 内存中 ByteBuffer 当前的写指针，该值大于等于 flushedWhere
 
     private volatile long storeTimestamp = 0;
 
@@ -73,21 +73,21 @@ public class MappedFileQueue {
             }
         }
     }
-
+// 根据消息存储时间戳 查找 映射文件
     public MappedFile getMappedFileByTime(final long timestamp) {
         Object[] mfs = this.copyMappedFiles(0);
 
         if (null == mfs)
             return null;
 
-        for (int i = 0; i < mfs.length; i++) {
+        for (int i = 0; i < mfs.length; i++) {// 从映射文件列表的第一个文件开始找
             MappedFile mappedFile = (MappedFile) mfs[i];
-            if (mappedFile.getLastModifiedTimestamp() >= timestamp) {
-                return mappedFile;
+            if (mappedFile.getLastModifiedTimestamp() >= timestamp) {// 最后一次更新时间 > 查找时间戳 返回
+                return mappedFile;// TODO: 2019/10/25 JasonWoo 只返回一个符合条件的映射文件? 其他的文件呢?
             }
         }
 
-        return (MappedFile) mfs[mfs.length - 1];
+        return (MappedFile) mfs[mfs.length - 1];// 不存在 返回最后一个文件
     }
 
     private Object[] copyMappedFiles(final int reservedMappedFiles) {
@@ -120,7 +120,7 @@ public class MappedFileQueue {
 
         this.deleteExpiredFile(willRemoveFiles);
     }
-
+// 删除文件列表
     void deleteExpiredFile(List<MappedFile> files) {
 
         if (!files.isEmpty()) {
@@ -143,12 +143,12 @@ public class MappedFileQueue {
             }
         }
     }
-
+// 加载CommitLog文件
     public boolean load() {
         File dir = new File(this.storePath);
         File[] files = dir.listFiles();
         if (files != null) {
-            // ascending order
+            // ascending order 按文件名排序
             Arrays.sort(files);
             for (File file : files) {
 
@@ -160,7 +160,7 @@ public class MappedFileQueue {
 
                 try {
                     MappedFile mappedFile = new MappedFile(file.getPath(), mappedFileSize);
-
+                    // 指针的起始值起始都是文件的大小
                     mappedFile.setWrotePosition(this.mappedFileSize);
                     mappedFile.setFlushedPosition(this.mappedFileSize);
                     mappedFile.setCommittedPosition(this.mappedFileSize);
@@ -284,7 +284,7 @@ public class MappedFileQueue {
         }
         return true;
     }
-
+// 获取最小偏移量 不是直接返回0 因为旧的文件会定期删除
     public long getMinOffset() {
 
         if (!this.mappedFiles.isEmpty()) {
@@ -298,7 +298,7 @@ public class MappedFileQueue {
         }
         return -1;
     }
-
+// 获取最大偏移量 最后一个文件的fileFromOffset + 文件当前的写指针
     public long getMaxOffset() {
         MappedFile mappedFile = getLastMappedFile();
         if (mappedFile != null) {
@@ -306,7 +306,7 @@ public class MappedFileQueue {
         }
         return 0;
     }
-
+// 文件当前的写指针
     public long getMaxWrotePosition() {
         MappedFile mappedFile = getLastMappedFile();
         if (mappedFile != null) {
@@ -332,7 +332,7 @@ public class MappedFileQueue {
 
         }
     }
-
+// 文件删除
     public int deleteExpiredFileByTime(final long expiredTime,
         final int deleteFilesInterval,
         final long intervalForcibly,
@@ -348,10 +348,10 @@ public class MappedFileQueue {
         if (null != mfs) {
             for (int i = 0; i < mfsLength; i++) {
                 MappedFile mappedFile = (MappedFile) mfs[i];
-                long liveMaxTimestamp = mappedFile.getLastModifiedTimestamp() + expiredTime;
+                long liveMaxTimestamp = mappedFile.getLastModifiedTimestamp() + expiredTime;// 计算文件 最大存活时间
                 if (System.currentTimeMillis() >= liveMaxTimestamp || cleanImmediately) {
                     if (mappedFile.destroy(intervalForcibly)) {
-                        files.add(mappedFile);
+                        files.add(mappedFile);// 加入待删除文件列表
                         deleteCount++;
 
                         if (files.size() >= DELETE_FILES_BATCH_MAX) {
@@ -374,7 +374,7 @@ public class MappedFileQueue {
             }
         }
 
-        deleteExpiredFile(files);
+        deleteExpiredFile(files);// 统一删除文件列表
 
         return deleteCount;
     }
@@ -451,7 +451,7 @@ public class MappedFileQueue {
 
         return result;
     }
-
+// 根据消息偏移量 查找 映射文件
     /**
      * Finds a mapped file by offset.
      *
@@ -472,7 +472,7 @@ public class MappedFileQueue {
                         this.mappedFileSize,
                         this.mappedFiles.size());
                 } else {
-                    int index = (int) ((offset / this.mappedFileSize) - (firstMappedFile.getFileFromOffset() / this.mappedFileSize));
+                    int index = (int) ((offset / this.mappedFileSize) - (firstMappedFile.getFileFromOffset() / this.mappedFileSize));// todo 定位映射文件的算法
                     MappedFile targetFile = null;
                     try {
                         targetFile = this.mappedFiles.get(index);

@@ -20,7 +20,7 @@ import org.apache.rocketmq.client.consumer.listener.MessageListener;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerOrderly;
 import org.apache.rocketmq.client.exception.MQClientException;
-
+// Jason
 /**
  * Push consumer
  */
@@ -40,9 +40,9 @@ public interface MQPushConsumer extends MQConsumer {
      */
     @Deprecated
     void registerMessageListener(MessageListener messageListener);
-
+// Jason 注册 顺序消息事件监听器
     void registerMessageListener(final MessageListenerConcurrently messageListener);
-
+// Jason 注册 发消息时间监听器
     void registerMessageListener(final MessageListenerOrderly messageListener);
 
     /**
@@ -51,7 +51,7 @@ public interface MQPushConsumer extends MQConsumer {
      * @param subExpression subscription expression.it only support or operation such as "tag1 || tag2 || tag3" <br> if
      * null or * expression,meaning subscribe
      * all
-     */
+     */ // Jason 基于topic订阅消息
     void subscribe(final String topic, final String subExpression) throws MQClientException;
 
     /**
@@ -90,7 +90,7 @@ public interface MQPushConsumer extends MQConsumer {
      * Unsubscribe consumption some topic
      *
      * @param topic message topic
-     */
+     */// Jason 取消订阅
     void unsubscribe(final String topic);
 
     /**

@@ -27,13 +27,13 @@ import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.store.config.MessageStoreConfig;
 import org.apache.rocketmq.store.util.LibC;
 import sun.nio.ch.DirectBuffer;
-
+// Jason 堆内存池 目的:将当前堆外内存一直锁定在内存中, 避免被进程将内存交换到磁盘?
 public class TransientStorePool {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
     private final int poolSize;
-    private final int fileSize;
-    private final Deque<ByteBuffer> availableBuffers;
+    private final int fileSize;// 每个ByteBuffer大小 即commitLog大小
+    private final Deque<ByteBuffer> availableBuffers;// ByteBuffer容器 双端队列
     private final MessageStoreConfig storeConfig;
 
     public TransientStorePool(final MessageStoreConfig storeConfig) {
@@ -48,11 +48,11 @@ public class TransientStorePool {
      */
     public void init() {
         for (int i = 0; i < poolSize; i++) {
-            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(fileSize);
+            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(fileSize);// 创建堆外内存
 
             final long address = ((DirectBuffer) byteBuffer).address();
             Pointer pointer = new Pointer(address);
-            LibC.INSTANCE.mlock(pointer, new NativeLong(fileSize));
+            LibC.INSTANCE.mlock(pointer, new NativeLong(fileSize));// 将这批内存锁定 !!! 提高存储性能
 
             availableBuffers.offer(byteBuffer);
         }

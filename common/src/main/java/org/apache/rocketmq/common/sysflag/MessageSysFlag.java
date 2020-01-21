@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 package org.apache.rocketmq.common.sysflag;
-
+// Jason 消息状态
 public class MessageSysFlag {
     public final static int COMPRESSED_FLAG = 0x1;
     public final static int MULTI_TAGS_FLAG = 0x1 << 1;

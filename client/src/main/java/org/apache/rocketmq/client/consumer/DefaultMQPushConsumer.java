@@ -59,7 +59,7 @@ import org.apache.rocketmq.remoting.exception.RemotingException;
  * <p>
  * <strong>Thread Safety:</strong> After initialization, the instance can be regarded as thread-safe.
  * </p>
- */
+ */// Jason
 public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsumer {
 
     private final InternalLogger log = ClientLogger.getLog();
@@ -75,7 +75,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
      * </p>
      *
      * See <a href="http://rocketmq.apache.org/docs/core-concept/">here</a> for further discussion.
-     */
+     */// Jason 组
     private String consumerGroup;
 
     /**
@@ -89,7 +89,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
      * </p>
      *
      * This field defaults to clustering.
-     */
+     */// Jason 模式 集群 广播
     private MessageModel messageModel = MessageModel.CLUSTERING;
 
     /**
@@ -122,7 +122,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
      * messages born prior to {@link #consumeTimestamp} will be ignored
      * </li>
      * </ul>
-     */
+     */// Jason 从消息服务器拉不到消息时 重新计算消费策略
     private ConsumeFromWhere consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET;
 
     /**
@@ -135,22 +135,22 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
 
     /**
      * Queue allocation algorithm specifying how message queues are allocated to each consumer clients.
-     */
+     */// Jason 集群模式下 负载均衡策略
     private AllocateMessageQueueStrategy allocateMessageQueueStrategy;
 
     /**
      * Subscription relationship
-     */
+     */// Jason 订阅信息 todo 订阅关系来源有两处
     private Map<String /* topic */, String /* sub expression */> subscription = new HashMap<String, String>();
 
     /**
      * Message listener
-     */
+     */// Jason 消息业务监听
     private MessageListener messageListener;
 
     /**
      * Offset Storage
-     */
+     */// Jason 消息 消费进度 存储
     private OffsetStore offsetStore;
 
     /**
@@ -160,7 +160,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
 
     /**
      * Max consumer thread number
-     */
+     */// Jason 线程池是无界队列 消费者线程个数只有consumeThreadMin个
     private int consumeThreadMax = 20;
 
     /**
@@ -170,13 +170,13 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
 
     /**
      * Concurrently max span offset.it has no effect on sequential consumption
-     */
+     */// Jason 并发消息消费时 处理队列最大跨度
     private int consumeConcurrentlyMaxSpan = 2000;
 
     /**
      * Flow control threshold on queue level, each message queue will cache at most 1000 messages by default,
      * Consider the {@code pullBatchSize}, the instantaneous value may exceed the limit
-     */
+     */// Jason 每1000次流控后打印流控日志
     private int pullThresholdForQueue = 1000;
 
     /**
@@ -212,22 +212,22 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
 
     /**
      * Message pull Interval
-     */
+     */// 推模式下 任务间隔
     private long pullInterval = 0;
 
     /**
      * Batch consumption size
-     */
+     */// Jason 并发消费 每次消费消息条数
     private int consumeMessageBatchMaxSize = 1;
 
     /**
      * Batch pull size
-     */
+     */// Jason 拉取消息条数
     private int pullBatchSize = 32;
 
     /**
      * Whether update subscription relationship when every pull
-     */
+     */// Jason 每次拉取消息 更新订阅信息
     private boolean postSubscriptionWhenPull = false;
 
     /**
@@ -241,7 +241,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
      *
      * If messages are re-consumed more than {@link #maxReconsumeTimes} before success, it's be directed to a deletion
      * queue waiting.
-     */
+     */// Jason 最大重试次数
     private int maxReconsumeTimes = -1;
 
     /**
@@ -251,7 +251,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
 
     /**
      * Maximum amount of time in minutes a message may block the consuming thread.
-     */
+     */// Jason 消息消费超时时间
     private long consumeTimeout = 15;
 
     /**

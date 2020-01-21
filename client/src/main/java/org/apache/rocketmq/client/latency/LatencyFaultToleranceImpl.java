@@ -23,13 +23,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.rocketmq.client.common.ThreadLocalIndex;
-
+// Jason
 public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> {
     private final ConcurrentHashMap<String, FaultItem> faultItemTable = new ConcurrentHashMap<String, FaultItem>(16);
 
     private final ThreadLocalIndex whichItemWorst = new ThreadLocalIndex();
 
-    @Override
+    @Override// Jason 更新失败条目 notAvailableDuration:是认为broker不可用的时长
     public void updateFaultItem(final String name, final long currentLatency, final long notAvailableDuration) {
         FaultItem old = this.faultItemTable.get(name);
         if (null == old) {
@@ -62,7 +62,7 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
         this.faultItemTable.remove(name);
     }
 
-    @Override
+    @Override// 从规避的broker选一个可用的 没有找到则返回null
     public String pickOneAtLeast() {
         final Enumeration<FaultItem> elements = this.faultItemTable.elements();
         List<FaultItem> tmpList = new LinkedList<FaultItem>();
@@ -95,11 +95,11 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
             ", whichItemWorst=" + whichItemWorst +
             '}';
     }
-
-    class FaultItem implements Comparable<FaultItem> {
-        private final String name;
-        private volatile long currentLatency;
-        private volatile long startTimestamp;
+// 规避规则条目
+    class FaultItem implements Comparable<FaultItem> {// 注意使用 volatile 修饰
+        private final String name;// brokerName
+        private volatile long currentLatency;// 消息发送延迟 todo 为什么会产生这个延迟?
+        private volatile long startTimestamp;// 故障规避开始时间 当前系统时间+规避时长 判断broker是否可用的直接依据
 
         public FaultItem(final String name) {
             this.name = name;
@@ -134,7 +134,7 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
             return (System.currentTimeMillis() - startTimestamp) >= 0;
         }
 
-        @Override
+        @Override// hashCode 和 equals必须一起重写
         public int hashCode() {
             int result = getName() != null ? getName().hashCode() : 0;
             result = 31 * result + (int) (getCurrentLatency() ^ (getCurrentLatency() >>> 32));
@@ -142,7 +142,7 @@ public class LatencyFaultToleranceImpl implements LatencyFaultTolerance<String> 
             return result;
         }
 
-        @Override
+        @Override// hashCode 和 equals必须一起重写
         public boolean equals(final Object o) {
             if (this == o)
                 return true;

@@ -22,11 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import org.apache.rocketmq.common.MixAll;
-
+// Jason
 public class BrokerData implements Comparable<BrokerData> {
-    private String cluster;
+    private String cluster; // 所属集群
     private String brokerName;
-    private HashMap<Long/* brokerId */, String/* broker address */> brokerAddrs;
+    private HashMap<Long/* brokerId */, String/* broker address */> brokerAddrs; // brokerId = 0 Master ; brokerId > 0 Slave
 
     private final Random random = new Random();
 

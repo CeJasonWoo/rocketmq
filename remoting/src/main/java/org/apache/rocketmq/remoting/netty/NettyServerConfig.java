@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 package org.apache.rocketmq.remoting.netty;
-
+// Jason
 public class NettyServerConfig implements Cloneable {
     private int listenPort = 8888;
     private int serverWorkerThreads = 8;
@@ -27,7 +27,7 @@ public class NettyServerConfig implements Cloneable {
 
     private int serverSocketSndBufSize = NettySystemConfig.socketSndbufSize;
     private int serverSocketRcvBufSize = NettySystemConfig.socketRcvbufSize;
-    private boolean serverPooledByteBufAllocatorEnable = true;
+    private boolean serverPooledByteBufAllocatorEnable = true; // ByteBuf缓存开启
 
     /**
      * make make install

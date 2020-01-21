@@ -23,7 +23,7 @@ import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
+// Jason 为何继承ThreadPoolExecutor? 变量都加上了final关键字!!
 public class BrokerFixedThreadPoolExecutor extends ThreadPoolExecutor {
     public BrokerFixedThreadPoolExecutor(final int corePoolSize, final int maximumPoolSize, final long keepAliveTime,
         final TimeUnit unit,
@@ -33,7 +33,7 @@ public class BrokerFixedThreadPoolExecutor extends ThreadPoolExecutor {
 
     public BrokerFixedThreadPoolExecutor(final int corePoolSize, final int maximumPoolSize, final long keepAliveTime,
         final TimeUnit unit,
-        final BlockingQueue<Runnable> workQueue, final ThreadFactory threadFactory) {
+        final BlockingQueue<Runnable> workQueue, final ThreadFactory threadFactory) {// 变量都加上了final关键字!!
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
     }
 

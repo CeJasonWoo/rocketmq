@@ -15,22 +15,22 @@
  * limitations under the License.
  */
 package org.apache.rocketmq.store;
-
+// Jason
 public enum GetMessageStatus {
 
     FOUND,
 
     NO_MATCHED_MESSAGE,
 
-    MESSAGE_WAS_REMOVING,
+    MESSAGE_WAS_REMOVING, // 消息存放在下个commitLog文件中
 
-    OFFSET_FOUND_NULL,
+    OFFSET_FOUND_NULL,// offset 为null
 
-    OFFSET_OVERFLOW_BADLY,
+    OFFSET_OVERFLOW_BADLY,// offset越界
 
-    OFFSET_OVERFLOW_ONE,
+    OFFSET_OVERFLOW_ONE,// offset越界一个
 
-    OFFSET_TOO_SMALL,
+    OFFSET_TOO_SMALL,// offset不在队列中
 
     NO_MATCHED_LOGIC_QUEUE,
 

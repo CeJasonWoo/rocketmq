@@ -26,7 +26,7 @@ import org.apache.rocketmq.common.utils.NameServerAddressUtils;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
 import org.apache.rocketmq.remoting.netty.TlsSystemConfig;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
-
+// Jason
 /**
  * Client Common configuration
  */
@@ -58,7 +58,7 @@ public class ClientConfig {
     private boolean useTLS = TlsSystemConfig.tlsEnable;
 
     private LanguageCode language = LanguageCode.JAVA;
-
+    // Jason ClientId = ClientIP + instName + unitName
     public String buildMQClientId() {
         StringBuilder sb = new StringBuilder();
         sb.append(this.getClientIP());

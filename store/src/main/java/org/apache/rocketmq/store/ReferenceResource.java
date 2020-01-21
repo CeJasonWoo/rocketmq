@@ -17,9 +17,9 @@
 package org.apache.rocketmq.store;
 
 import java.util.concurrent.atomic.AtomicLong;
-
+// Jason
 public abstract class ReferenceResource {
-    protected final AtomicLong refCount = new AtomicLong(1);
+    protected final AtomicLong refCount = new AtomicLong(1); // 引用次数
     protected volatile boolean available = true;
     protected volatile boolean cleanupOver = false;
     private volatile long firstShutdownTimestamp = 0;
@@ -41,13 +41,13 @@ public abstract class ReferenceResource {
     }
 
     public void shutdown(final long intervalForcibly) {
-        if (this.available) {
+        if (this.available) {// 首次
             this.available = false;
-            this.firstShutdownTimestamp = System.currentTimeMillis();
-            this.release();
-        } else if (this.getRefCount() > 0) {
-            if ((System.currentTimeMillis() - this.firstShutdownTimestamp) >= intervalForcibly) {
-                this.refCount.set(-1000 - this.getRefCount());
+            this.firstShutdownTimestamp = System.currentTimeMillis();// 设置首次关闭时间戳
+            this.release();// 释放资源
+        } else if (this.getRefCount() > 0) {// 引用次数 > 0
+            if ((System.currentTimeMillis() - this.firstShutdownTimestamp) >= intervalForcibly) {// 如果超过最大存活期
+                this.refCount.set(-1000 - this.getRefCount());// 引用次数-1000 ??　负数 ??
                 this.release();
             }
         }
@@ -55,7 +55,7 @@ public abstract class ReferenceResource {
 
     public void release() {
         long value = this.refCount.decrementAndGet();
-        if (value > 0)
+        if (value > 0)// 引用次数 < 1 才会释放资源
             return;
 
         synchronized (this) {
@@ -69,7 +69,7 @@ public abstract class ReferenceResource {
     }
 
     public abstract boolean cleanup(final long currentRef);
-
+// 是否清理完成判断
     public boolean isCleanupOver() {
         return this.refCount.get() <= 0 && this.cleanupOver;
     }

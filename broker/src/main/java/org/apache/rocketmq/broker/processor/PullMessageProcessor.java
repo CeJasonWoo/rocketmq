@@ -65,7 +65,7 @@ import org.apache.rocketmq.store.MessageFilter;
 import org.apache.rocketmq.store.PutMessageResult;
 import org.apache.rocketmq.store.config.BrokerRole;
 import org.apache.rocketmq.store.stats.BrokerStatsManager;
-
+// Jason 拉取消息请求组装
 public class PullMessageProcessor implements NettyRequestProcessor {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
     private final BrokerController brokerController;
@@ -85,7 +85,7 @@ public class PullMessageProcessor implements NettyRequestProcessor {
     public boolean rejectRequest() {
         return false;
     }
-
+// Jason param1: netty Channel; params2: 消息拉取请求; params3: broker是否支持挂起|客户端未找到消息时挂起;
     private RemotingCommand processRequest(final Channel channel, RemotingCommand request, boolean brokerAllowSuspend)
         throws RemotingCommandException {
         RemotingCommand response = RemotingCommand.createResponseCommand(PullMessageResponseHeader.class);
@@ -232,11 +232,11 @@ public class PullMessageProcessor implements NettyRequestProcessor {
             messageFilter = new ExpressionMessageFilter(subscriptionData, consumerFilterData,
                 this.brokerController.getConsumerFilterManager());
         }
-
+// broker开始查找消息
         final GetMessageResult getMessageResult =
             this.brokerController.getMessageStore().getMessage(requestHeader.getConsumerGroup(), requestHeader.getTopic(),
                 requestHeader.getQueueId(), requestHeader.getQueueOffset(), requestHeader.getMaxMsgNums(), messageFilter);
-        if (getMessageResult != null) {
+        if (getMessageResult != null) {// 拉取结果填充responseHeader
             response.setRemark(getMessageResult.getStatus().name());
             responseHeader.setNextBeginOffset(getMessageResult.getNextBeginOffset());
             responseHeader.setMinOffset(getMessageResult.getMinOffset());
@@ -404,20 +404,20 @@ public class PullMessageProcessor implements NettyRequestProcessor {
                     }
                     break;
                 case ResponseCode.PULL_NOT_FOUND:
-
+// 未拉取到消息 // 支持挂起
                     if (brokerAllowSuspend && hasSuspendFlag) {
                         long pollingTimeMills = suspendTimeoutMillisLong;
                         if (!this.brokerController.getBrokerConfig().isLongPollingEnable()) {
                             pollingTimeMills = this.brokerController.getBrokerConfig().getShortPollingTimeMills();
                         }
-
+// 长轮询
                         String topic = requestHeader.getTopic();
                         long offset = requestHeader.getQueueOffset();
                         int queueId = requestHeader.getQueueId();
                         PullRequest pullRequest = new PullRequest(request, channel, pollingTimeMills,
                             this.brokerController.getMessageStore().now(), offset, subscriptionData, messageFilter);
-                        this.brokerController.getPullRequestHoldService().suspendPullRequest(topic, queueId, pullRequest);
-                        response = null;
+                        this.brokerController.getPullRequestHoldService().suspendPullRequest(topic, queueId, pullRequest);// 请求放到PullRequestHoldService 5s重试一次
+                        response = null;// 挂起后 返回null
                         break;
                     }
 
@@ -457,11 +457,11 @@ public class PullMessageProcessor implements NettyRequestProcessor {
             response.setCode(ResponseCode.SYSTEM_ERROR);
             response.setRemark("store getMessage return null");
         }
-
+// 更新消息消费进度
         boolean storeOffsetEnable = brokerAllowSuspend;
-        storeOffsetEnable = storeOffsetEnable && hasCommitOffsetFlag;
+        storeOffsetEnable = storeOffsetEnable && hasCommitOffsetFlag;// commitLog标记可用
         storeOffsetEnable = storeOffsetEnable
-            && this.brokerController.getMessageStoreConfig().getBrokerRole() != BrokerRole.SLAVE;
+            && this.brokerController.getMessageStoreConfig().getBrokerRole() != BrokerRole.SLAVE;// 是主节点
         if (storeOffsetEnable) {
             this.brokerController.getConsumerOffsetManager().commitOffset(RemotingHelper.parseChannelRemoteAddr(channel),
                 requestHeader.getConsumerGroup(), requestHeader.getTopic(), requestHeader.getQueueId(), requestHeader.getCommitOffset());
@@ -535,7 +535,7 @@ public class PullMessageProcessor implements NettyRequestProcessor {
         Runnable run = new Runnable() {
             @Override
             public void run() {
-                try {
+                try {// brokerAllowSuspend = false 这里不支持挂起 找不到消息直接返回未找到
                     final RemotingCommand response = PullMessageProcessor.this.processRequest(channel, request, false);
 
                     if (response != null) {

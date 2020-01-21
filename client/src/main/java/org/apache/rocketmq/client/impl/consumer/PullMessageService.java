@@ -26,10 +26,10 @@ import org.apache.rocketmq.client.log.ClientLogger;
 import org.apache.rocketmq.common.ServiceThread;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.common.utils.ThreadUtils;
-
+// Jason 消息拉取服务
 public class PullMessageService extends ServiceThread {
     private final InternalLogger log = ClientLogger.getLog();
-    private final LinkedBlockingQueue<PullRequest> pullRequestQueue = new LinkedBlockingQueue<PullRequest>();
+    private final LinkedBlockingQueue<PullRequest> pullRequestQueue = new LinkedBlockingQueue<PullRequest>();// 请求队列
     private final MQClientInstance mQClientFactory;
     private final ScheduledExecutorService scheduledExecutorService = Executors
         .newSingleThreadScheduledExecutor(new ThreadFactory() {
@@ -42,7 +42,7 @@ public class PullMessageService extends ServiceThread {
     public PullMessageService(MQClientInstance mQClientFactory) {
         this.mQClientFactory = mQClientFactory;
     }
-
+// Jason 将PullRequest加入Queue 延迟
     public void executePullRequestLater(final PullRequest pullRequest, final long timeDelay) {
         if (!isStopped()) {
             this.scheduledExecutorService.schedule(new Runnable() {
@@ -55,7 +55,7 @@ public class PullMessageService extends ServiceThread {
             log.warn("PullMessageServiceScheduledThread has shutdown");
         }
     }
-
+// Jason 将PullRequest加入Queue 立即
     public void executePullRequestImmediately(final PullRequest pullRequest) {
         try {
             this.pullRequestQueue.put(pullRequest);
@@ -79,20 +79,20 @@ public class PullMessageService extends ServiceThread {
     private void pullMessage(final PullRequest pullRequest) {
         final MQConsumerInner consumer = this.mQClientFactory.selectConsumer(pullRequest.getConsumerGroup());
         if (consumer != null) {
-            DefaultMQPushConsumerImpl impl = (DefaultMQPushConsumerImpl) consumer;
-            impl.pullMessage(pullRequest);
+            DefaultMQPushConsumerImpl impl = (DefaultMQPushConsumerImpl) consumer;// TODO: 2019/11/5 JasonWoo 为何强转
+            impl.pullMessage(pullRequest);// 不管是pull还是push模式 都使用pull实现 ?
         } else {
             log.warn("No matched consumer for the PullRequest {}, drop it", pullRequest);
         }
     }
-
+// 核心逻辑
     @Override
     public void run() {
         log.info(this.getServiceName() + " service started");
 
-        while (!this.isStopped()) {
+        while (!this.isStopped()) {// 运行状态判断 可以通过其他线程将Stopped设置为false从而停止服务
             try {
-                PullRequest pullRequest = this.pullRequestQueue.take();
+                PullRequest pullRequest = this.pullRequestQueue.take(); // take->队列为空会阻塞线程 | 刚启动时会进入阻塞
                 this.pullMessage(pullRequest);
             } catch (InterruptedException ignored) {
             } catch (Exception e) {

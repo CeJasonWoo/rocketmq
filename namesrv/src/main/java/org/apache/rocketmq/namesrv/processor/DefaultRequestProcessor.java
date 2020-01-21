@@ -56,7 +56,7 @@ import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.apache.rocketmq.remoting.exception.RemotingCommandException;
 import org.apache.rocketmq.remoting.netty.NettyRequestProcessor;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
-
+// Jason 网络请求处理器
 public class DefaultRequestProcessor implements NettyRequestProcessor {
     private static InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
 
@@ -333,20 +333,20 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
         response.setRemark(null);
         return response;
     }
-
+// 路由发现
     public RemotingCommand getRouteInfoByTopic(ChannelHandlerContext ctx,
         RemotingCommand request) throws RemotingCommandException {
         final RemotingCommand response = RemotingCommand.createResponseCommand(null);
         final GetRouteInfoRequestHeader requestHeader =
             (GetRouteInfoRequestHeader) request.decodeCommandCustomHeader(GetRouteInfoRequestHeader.class);
-
-        TopicRouteData topicRouteData = this.namesrvController.getRouteInfoManager().pickupTopicRouteData(requestHeader.getTopic());
+// TODO: 2019/10/23 JasonWoo 没有找到autoCreate相关判断?
+        TopicRouteData topicRouteData = this.namesrvController.getRouteInfoManager().pickupTopicRouteData(requestHeader.getTopic());// 填充list信息?
 
         if (topicRouteData != null) {
-            if (this.namesrvController.getNamesrvConfig().isOrderMessageEnable()) {
+            if (this.namesrvController.getNamesrvConfig().isOrderMessageEnable()) {// 顺序消息
                 String orderTopicConf =
                     this.namesrvController.getKvConfigManager().getKVConfig(NamesrvUtil.NAMESPACE_ORDER_TOPIC_CONFIG,
-                        requestHeader.getTopic());
+                        requestHeader.getTopic());// 获取相关配置
                 topicRouteData.setOrderTopicConf(orderTopicConf);
             }
 
@@ -357,7 +357,7 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
             return response;
         }
 
-        response.setCode(ResponseCode.TOPIC_NOT_EXIST);
+        response.setCode(ResponseCode.TOPIC_NOT_EXIST);// 找不到路由信息
         response.setRemark("No topic route info in name server for the topic: " + requestHeader.getTopic()
             + FAQUrl.suggestTodo(FAQUrl.APPLY_TOPIC_URL));
         return response;

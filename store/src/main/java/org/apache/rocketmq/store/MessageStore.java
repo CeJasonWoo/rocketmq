@@ -23,7 +23,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageExtBatch;
 import org.apache.rocketmq.store.config.BrokerRole;
 import org.apache.rocketmq.store.stats.BrokerStatsManager;
-
+// Jason
 /**
  * This class defines contracting interfaces to implement, allowing third-party vendor to use customized message store.
  */
@@ -73,11 +73,11 @@ public interface MessageStore {
      * Query at most <code>maxMsgNums</code> messages belonging to <code>topic</code> at <code>queueId</code> starting
      * from given <code>offset</code>. Resulting messages will further be screened using provided message filter.
      *
-     * @param group Consumer group that launches this query.
+     * @param group Consumer group that launches this query. // 消费组
      * @param topic Topic to query.
-     * @param queueId Queue ID to query.
-     * @param offset Logical offset to start from.
-     * @param maxMsgNums Maximum count of messages to query.
+     * @param queueId Queue ID to query. // 队列ID
+     * @param offset Logical offset to start from. // 待拉取偏移量
+     * @param maxMsgNums Maximum count of messages to query. // 最大拉取消息条数
      * @param messageFilter Message filter used to screen desired messages.
      * @return Matched messages.
      */

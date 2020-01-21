@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 package org.apache.rocketmq.common.sysflag;
-
+// Jason
 public class PullSysFlag {
-    private final static int FLAG_COMMIT_OFFSET = 0x1;
-    private final static int FLAG_SUSPEND = 0x1 << 1;
-    private final static int FLAG_SUBSCRIPTION = 0x1 << 2;
-    private final static int FLAG_CLASS_FILTER = 0x1 << 3;
+    private final static int FLAG_COMMIT_OFFSET = 0x1;// 从内存中读取消费进度>0
+    private final static int FLAG_SUSPEND = 0x1 << 1;// 消息拉取时支持挂起
+    private final static int FLAG_SUBSCRIPTION = 0x1 << 2;// 消息过滤机制 表达式
+    private final static int FLAG_CLASS_FILTER = 0x1 << 3;// 消息过滤机制 类过滤模式
 
     public static int buildSysFlag(final boolean commitOffset, final boolean suspend,
         final boolean subscription, final boolean classFilter) {

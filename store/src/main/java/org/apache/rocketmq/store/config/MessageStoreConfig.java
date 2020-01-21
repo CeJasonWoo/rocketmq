@@ -19,7 +19,7 @@ package org.apache.rocketmq.store.config;
 import java.io.File;
 import org.apache.rocketmq.common.annotation.ImportantField;
 import org.apache.rocketmq.store.ConsumeQueue;
-
+// Jason
 public class MessageStoreConfig {
     //The root directory in which the log data is kept
     @ImportantField
@@ -63,19 +63,19 @@ public class MessageStoreConfig {
     private boolean flushCommitLogTimed = false;
     // ConsumeQueue flush interval
     private int flushIntervalConsumeQueue = 1000;
-    // Resource reclaim interval
+    // Resource reclaim interval // 删除文件调度频率
     private int cleanResourceInterval = 10000;
     // CommitLog removal interval
     private int deleteCommitLogFilesInterval = 100;
     // ConsumeQueue removal interval
     private int deleteConsumeQueueFilesInterval = 100;
-    private int destroyMapedFileIntervalForcibly = 1000 * 120;
+    private int destroyMapedFileIntervalForcibly = 1000 * 120;// 强制删除时间
     private int redeleteHangedFileInterval = 1000 * 120;
-    // When to delete,default is at 4 am
+    // When to delete,default is at 4 am // 每天删除过期文件时间
     @ImportantField
     private String deleteWhen = "04";
     private int diskMaxUsedSpaceRatio = 75;
-    // The number of hours to keep a log file before deleting it (in hours)
+    // The number of hours to keep a log file before deleting it (in hours) // 过期文件保留时间
     @ImportantField
     private int fileReservedTime = 72;
     // Flow control for ConsumeQueue
@@ -125,7 +125,7 @@ public class MessageStoreConfig {
     private BrokerRole brokerRole = BrokerRole.ASYNC_MASTER;
     @ImportantField
     private FlushDiskType flushDiskType = FlushDiskType.ASYNC_FLUSH;
-    private int syncFlushTimeout = 1000 * 5;
+    private int syncFlushTimeout = 1000 * 5;// 同步刷盘超时时间
     private String messageDelayLevel = "1s 5s 10s 30s 1m 2m 3m 4m 5m 6m 7m 8m 9m 10m 20m 30m 1h 2h";
     private long flushDelayOffsetInterval = 1000 * 10;
     @ImportantField
@@ -297,7 +297,7 @@ public class MessageStoreConfig {
     public void setDeleteWhen(String deleteWhen) {
         this.deleteWhen = deleteWhen;
     }
-
+// 文件所在磁盘分区最大使用量
     public int getDiskMaxUsedSpaceRatio() {
         if (this.diskMaxUsedSpaceRatio < 10)
             return 10;

@@ -57,14 +57,14 @@ import org.apache.rocketmq.remoting.exception.RemotingTooMuchRequestException;
 import org.apache.rocketmq.remoting.netty.NettyClientConfig;
 import org.apache.rocketmq.remoting.netty.NettyRemotingClient;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
-
+// Jason
 public class BrokerOuterAPI {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
     private final RemotingClient remotingClient;
     private final TopAddressing topAddressing = new TopAddressing(MixAll.getWSAddr());
     private String nameSrvAddr = null;
     private BrokerFixedThreadPoolExecutor brokerOuterExecutor = new BrokerFixedThreadPoolExecutor(4, 10, 1, TimeUnit.MINUTES,
-        new ArrayBlockingQueue<Runnable>(32), new ThreadFactoryImpl("brokerOutApi_thread_", true));
+        new ArrayBlockingQueue<Runnable>(32), new ThreadFactoryImpl("brokerOutApi_thread_", true)); // 心跳包发送线程?
 
     public BrokerOuterAPI(final NettyClientConfig nettyClientConfig) {
         this(nettyClientConfig, null);
@@ -124,20 +124,20 @@ public class BrokerOuterAPI {
         final boolean compressed) {
 
         final List<RegisterBrokerResult> registerBrokerResultList = Lists.newArrayList();
-        List<String> nameServerAddressList = this.remotingClient.getNameServerAddressList();
+        List<String> nameServerAddressList = this.remotingClient.getNameServerAddressList(); // Jason 获取所有NameServer列表
         if (nameServerAddressList != null && nameServerAddressList.size() > 0) {
 
-            final RegisterBrokerRequestHeader requestHeader = new RegisterBrokerRequestHeader();
+            final RegisterBrokerRequestHeader requestHeader = new RegisterBrokerRequestHeader(); // Jason 封装请求头
             requestHeader.setBrokerAddr(brokerAddr);
             requestHeader.setBrokerId(brokerId);
             requestHeader.setBrokerName(brokerName);
             requestHeader.setClusterName(clusterName);
-            requestHeader.setHaServerAddr(haServerAddr);
+            requestHeader.setHaServerAddr(haServerAddr);// Jason master地址, slave向NameServer注册后返回
             requestHeader.setCompressed(compressed);
 
             RegisterBrokerBody requestBody = new RegisterBrokerBody();
-            requestBody.setTopicConfigSerializeWrapper(topicConfigWrapper);
-            requestBody.setFilterServerList(filterServerList);
+            requestBody.setTopicConfigSerializeWrapper(topicConfigWrapper);// Jason 主题配置
+            requestBody.setFilterServerList(filterServerList);// Jason 消息过滤服务列表
             final byte[] body = requestBody.encode(compressed);
             final int bodyCrc32 = UtilAll.crc32(body);
             requestHeader.setBodyCrc32(bodyCrc32);
@@ -147,7 +147,7 @@ public class BrokerOuterAPI {
                     @Override
                     public void run() {
                         try {
-                            RegisterBrokerResult result = registerBroker(namesrvAddr,oneway, timeoutMills,requestHeader,body);
+                            RegisterBrokerResult result = registerBroker(namesrvAddr,oneway, timeoutMills,requestHeader,body); // Jason发送心跳包
                             if (result != null) {
                                 registerBrokerResultList.add(result);
                             }

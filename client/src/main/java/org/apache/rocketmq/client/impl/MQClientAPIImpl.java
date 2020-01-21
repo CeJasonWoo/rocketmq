@@ -162,7 +162,7 @@ import org.apache.rocketmq.remoting.netty.ResponseFuture;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
-
+// Jason
 public class MQClientAPIImpl {
 
     private final static InternalLogger log = ClientLogger.getLog();
@@ -173,7 +173,7 @@ public class MQClientAPIImpl {
         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
     }
 
-    private final RemotingClient remotingClient;
+    private final RemotingClient remotingClient;// Jason etty
     private final TopAddressing topAddressing;
     private final ClientRemotingProcessor clientRemotingProcessor;
     private String nameSrvAddr = null;
@@ -678,7 +678,7 @@ public class MQClientAPIImpl {
         final CommunicationMode communicationMode,
         final PullCallback pullCallback
     ) throws RemotingException, MQBrokerException, InterruptedException {
-        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.PULL_MESSAGE, requestHeader);
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.PULL_MESSAGE, requestHeader);// PULL_MESSAGE 拉取消息的请求码
 
         switch (communicationMode) {
             case ONEWAY:
@@ -709,7 +709,7 @@ public class MQClientAPIImpl {
                 RemotingCommand response = responseFuture.getResponseCommand();
                 if (response != null) {
                     try {
-                        PullResult pullResult = MQClientAPIImpl.this.processPullResponse(response);
+                        PullResult pullResult = MQClientAPIImpl.this.processPullResponse(response);// 客戶端处理拉取的消息
                         assert pullResult != null;
                         pullCallback.onSuccess(pullResult);
                     } catch (Exception e) {
@@ -742,7 +742,7 @@ public class MQClientAPIImpl {
     private PullResult processPullResponse(
         final RemotingCommand response) throws MQBrokerException, RemotingCommandException {
         PullStatus pullStatus = PullStatus.NO_NEW_MSG;
-        switch (response.getCode()) {
+        switch (response.getCode()) {// ResponseCode 和 PullStatus 对应关系
             case ResponseCode.SUCCESS:
                 pullStatus = PullStatus.FOUND;
                 break;
@@ -1331,7 +1331,7 @@ public class MQClientAPIImpl {
         RemotingCommand response = this.remotingClient.invokeSync(null, request, timeoutMillis);
         assert response != null;
         switch (response.getCode()) {
-            case ResponseCode.TOPIC_NOT_EXIST: {
+            case ResponseCode.TOPIC_NOT_EXIST: {// AUTO_CREATE = false
                 if (allowTopicNotExist && !topic.equals(MixAll.AUTO_CREATE_TOPIC_KEY_TOPIC)) {
                     log.warn("get Topic [{}] RouteInfoFromNameServer is not exist value", topic);
                 }

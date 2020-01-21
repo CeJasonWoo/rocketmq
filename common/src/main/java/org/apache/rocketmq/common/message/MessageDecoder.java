@@ -56,14 +56,14 @@ public class MessageDecoder {
         + 8 // 12 STOREHOSTADDRESS
         + 4 // 13 RECONSUMETIMES
         + 8; // 14 Prepared Transaction Offset
-
+// Jason 全局唯一消息ID
     public static String createMessageId(final ByteBuffer input, final ByteBuffer addr, final long offset) {
         input.flip();
         input.limit(MessageDecoder.MSG_ID_LENGTH);
 
         input.put(addr);
         input.putLong(offset);
-
+// 为了可读性 将byte转为String返回
         return UtilAll.bytes2string(input.array());
     }
 
@@ -411,7 +411,7 @@ public class MessageDecoder {
 
         return map;
     }
-
+// 解码消息 todo 批量消息解码细节?
     public static byte[] encodeMessage(Message message) {
         //only need flag, body, properties
         byte[] body = message.getBody();

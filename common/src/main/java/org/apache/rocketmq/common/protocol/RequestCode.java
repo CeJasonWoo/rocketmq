@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Jason
 package org.apache.rocketmq.common.protocol;
 
 public class RequestCode {
@@ -84,10 +84,10 @@ public class RequestCode {
 
     public static final int DELETE_KV_CONFIG = 102;
 
-    public static final int REGISTER_BROKER = 103;
+    public static final int REGISTER_BROKER = 103;// register broker
 
     public static final int UNREGISTER_BROKER = 104;
-    public static final int GET_ROUTEINTO_BY_TOPIC = 105;
+    public static final int GET_ROUTEINTO_BY_TOPIC = 105;//客户端定时拉取最新路由
 
     public static final int GET_BROKER_CLUSTER_INFO = 106;
     public static final int UPDATE_AND_CREATE_SUBSCRIPTIONGROUP = 200;

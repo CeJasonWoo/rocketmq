@@ -21,12 +21,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
+// Jason 消息类
 public class Message implements Serializable {
     private static final long serialVersionUID = 8445773977080406428L;
 
     private String topic;
-    private int flag;
+    private int flag;// MessageSysFlag
     private Map<String, String> properties;
     private byte[] body;
     private String transactionId;
@@ -43,13 +43,13 @@ public class Message implements Serializable {
         this.flag = flag;
         this.body = body;
 
-        if (tags != null && tags.length() > 0)
+        if (tags != null && tags.length() > 0)// 消息过滤
             this.setTags(tags);
 
-        if (keys != null && keys.length() > 0)
+        if (keys != null && keys.length() > 0)// 消息索引
             this.setKeys(keys);
 
-        this.setWaitStoreMsgOK(waitStoreMsgOK);
+        this.setWaitStoreMsgOK(waitStoreMsgOK);//发送时等待消息存储完成再返回
     }
 
     public Message(String topic, String tags, byte[] body) {
@@ -146,7 +146,7 @@ public class Message implements Serializable {
     }
 
     public void setDelayTimeLevel(int level) {
-        this.putProperty(MessageConst.PROPERTY_DELAY_TIME_LEVEL, String.valueOf(level));
+        this.putProperty(MessageConst.PROPERTY_DELAY_TIME_LEVEL, String.valueOf(level));// 消息延时级别 | 定时 重试
     }
 
     public boolean isWaitStoreMsgOK() {

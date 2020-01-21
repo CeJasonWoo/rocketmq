@@ -18,13 +18,13 @@ package org.apache.rocketmq.client.consumer;
 
 import java.util.List;
 import org.apache.rocketmq.common.message.MessageExt;
-
+// Jason
 public class PullResult {
     private final PullStatus pullStatus;
-    private final long nextBeginOffset;
+    private final long nextBeginOffset;// Jason 下次拉取偏移量
     private final long minOffset;
     private final long maxOffset;
-    private List<MessageExt> msgFoundList;
+    private List<MessageExt> msgFoundList;// Jason 具体拉取的消息列表
 
     public PullResult(PullStatus pullStatus, long nextBeginOffset, long minOffset, long maxOffset,
         List<MessageExt> msgFoundList) {

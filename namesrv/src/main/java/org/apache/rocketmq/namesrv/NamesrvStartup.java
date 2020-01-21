@@ -40,7 +40,7 @@ import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 import org.apache.rocketmq.srvutil.ServerUtil;
 import org.apache.rocketmq.srvutil.ShutdownHookThread;
 import org.slf4j.LoggerFactory;
-
+// Jason
 public class NamesrvStartup {
 
     private static InternalLogger log;
@@ -85,7 +85,7 @@ public class NamesrvStartup {
         if (commandLine.hasOption('c')) {
             String file = commandLine.getOptionValue('c');
             if (file != null) {
-                InputStream in = new BufferedInputStream(new FileInputStream(file));
+                InputStream in = new BufferedInputStream(new FileInputStream(file)); // 加载配置文件
                 properties = new Properties();
                 properties.load(in);
                 MixAll.properties2Object(properties, namesrvConfig);
@@ -98,7 +98,7 @@ public class NamesrvStartup {
             }
         }
 
-        if (commandLine.hasOption('p')) {
+        if (commandLine.hasOption('p')) {// 数据配置信息 ?
             InternalLogger console = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_CONSOLE_NAME);
             MixAll.printObjectProperties(console, namesrvConfig);
             MixAll.printObjectProperties(console, nettyServerConfig);
@@ -149,7 +149,7 @@ public class NamesrvStartup {
                 controller.shutdown();
                 return null;
             }
-        }));
+        }));// 优雅停机 释放线程池
 
         controller.start();
 

@@ -23,7 +23,7 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.remoting.exception.RemotingException;
-
+// Jason
 /**
  * Message queue consumer interface
  */
@@ -37,7 +37,7 @@ public interface MQConsumer extends MQAdmin {
 
     /**
      * If consuming failure,message will be send back to the broker,and delay consuming some time
-     */
+     */ // Jason 发送消息ACK确认  delayLevel:延迟级别
     void sendMessageBack(final MessageExt msg, final int delayLevel, final String brokerName)
         throws RemotingException, MQBrokerException, InterruptedException, MQClientException;
 
@@ -46,6 +46,6 @@ public interface MQConsumer extends MQAdmin {
      *
      * @param topic message topic
      * @return queue set
-     */
+     */ // Jason 获取消费者对topic分配的消息队列
     Set<MessageQueue> fetchSubscribeMessageQueues(final String topic) throws MQClientException;
 }

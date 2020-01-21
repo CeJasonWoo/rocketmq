@@ -48,7 +48,7 @@ import org.apache.rocketmq.common.protocol.heartbeat.SubscriptionData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 import org.apache.rocketmq.common.sysflag.PullSysFlag;
 import org.apache.rocketmq.remoting.exception.RemotingException;
-
+// Jason
 public class PullAPIWrapper {
     private final InternalLogger log = ClientLogger.getLog();
     private final MQClientInstance mQClientFactory;
@@ -140,22 +140,22 @@ public class PullAPIWrapper {
     }
 
     public PullResult pullKernelImpl(
-        final MessageQueue mq,
-        final String subExpression,
-        final String expressionType,
+        final MessageQueue mq,//  Jason 拉取消息的消费队列
+        final String subExpression,// 消息过滤表达式
+        final String expressionType,// 表达式类型 分为 TAG SQL92
         final long subVersion,
-        final long offset,
-        final int maxNums,
+        final long offset,// 消息拉取偏移量
+        final int maxNums,// 本次拉取最大消息条数 32
         final int sysFlag,
-        final long commitOffset,
-        final long brokerSuspendMaxTimeMillis,
-        final long timeoutMillis,
-        final CommunicationMode communicationMode,
-        final PullCallback pullCallback
+        final long commitOffset, // 当前消费进度
+        final long brokerSuspendMaxTimeMillis,// 允许broker挂起时间
+        final long timeoutMillis,// 消息拉取超时时间
+        final CommunicationMode communicationMode,// 拉取模式 默认异步
+        final PullCallback pullCallback// 拉取消息后回调
     ) throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
         FindBrokerResult findBrokerResult =
             this.mQClientFactory.findBrokerAddressInSubscribe(mq.getBrokerName(),
-                this.recalculatePullFromWhichNode(mq), false);
+                this.recalculatePullFromWhichNode(mq), false);// BrokerName BrokerId 获取 Broker地址
         if (null == findBrokerResult) {
             this.mQClientFactory.updateTopicRouteInfoFromNameServer(mq.getTopic());
             findBrokerResult =
@@ -192,7 +192,7 @@ public class PullAPIWrapper {
             requestHeader.setExpressionType(expressionType);
 
             String brokerAddr = findBrokerResult.getBrokerAddr();
-            if (PullSysFlag.hasClassFilterFlag(sysFlagInner)) {
+            if (PullSysFlag.hasClassFilterFlag(sysFlagInner)) {// 类过滤模式 获取FilterServer地址
                 brokerAddr = computPullFromWhichFilterServer(mq.getTopic(), brokerAddr);
             }
 

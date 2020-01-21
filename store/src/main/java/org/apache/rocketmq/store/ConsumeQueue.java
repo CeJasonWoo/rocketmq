@@ -23,7 +23,8 @@ import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.store.config.StorePathConfigHelper;
-
+// Jason 消息消费队列 message(异步) -> CommitLog -> ConsumeQueue
+// ConsumeQueue文件存在意义 CommitLog中存的消息非常杂乱, 为了快速检索主题下面的消息
 public class ConsumeQueue {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
@@ -150,27 +151,27 @@ public class ConsumeQueue {
             }
         }
     }
-
+// 根据 消息存储时间 查找
     public long getOffsetInQueueByTime(final long timestamp) {
         MappedFile mappedFile = this.mappedFileQueue.getMappedFileByTime(timestamp);
-        if (mappedFile != null) {
-            long offset = 0;
+        if (mappedFile != null) {// TODO: 2019/10/26 JasonWoo 二分查找
+            long offset = 0;// 最低查找偏移量
             int low = minLogicOffset > mappedFile.getFileFromOffset() ? (int) (minLogicOffset - mappedFile.getFileFromOffset()) : 0;
             int high = 0;
             int midOffset = -1, targetOffset = -1, leftOffset = -1, rightOffset = -1;
             long leftIndexValue = -1L, rightIndexValue = -1L;
-            long minPhysicOffset = this.defaultMessageStore.getMinPhyOffset();
+            long minPhysicOffset = this.defaultMessageStore.getMinPhyOffset();// 有效物理偏移量
             SelectMappedBufferResult sbr = mappedFile.selectMappedBuffer(0);
             if (null != sbr) {
                 ByteBuffer byteBuffer = sbr.getByteBuffer();
                 high = byteBuffer.limit() - CQ_STORE_UNIT_SIZE;
                 try {
                     while (high >= low) {
-                        midOffset = (low + high) / (2 * CQ_STORE_UNIT_SIZE) * CQ_STORE_UNIT_SIZE;
+                        midOffset = (low + high) / (2 * CQ_STORE_UNIT_SIZE) * CQ_STORE_UNIT_SIZE;//mid
                         byteBuffer.position(midOffset);
                         long phyOffset = byteBuffer.getLong();
                         int size = byteBuffer.getInt();
-                        if (phyOffset < minPhysicOffset) {
+                        if (phyOffset < minPhysicOffset) {// mid < 最小物理偏移量
                             low = midOffset + CQ_STORE_UNIT_SIZE;
                             leftOffset = midOffset;
                             continue;
@@ -178,9 +179,9 @@ public class ConsumeQueue {
 
                         long storeTime =
                             this.defaultMessageStore.getCommitLog().pickupStoreTimestamp(phyOffset, size);
-                        if (storeTime < 0) {
+                        if (storeTime < 0) {// 无效消息
                             return 0;
-                        } else if (storeTime == timestamp) {
+                        } else if (storeTime == timestamp) {// 存储时间相等 消息匹配
                             targetOffset = midOffset;
                             break;
                         } else if (storeTime > timestamp) {
@@ -482,10 +483,10 @@ public class ConsumeQueue {
             mappedFile.appendMessage(byteBuffer.array());
         }
     }
-
+// 获取消息 消费队列 条目
     public SelectMappedBufferResult getIndexBuffer(final long startIndex) {
         int mappedFileSize = this.mappedFileSize;
-        long offset = startIndex * CQ_STORE_UNIT_SIZE;
+        long offset = startIndex * CQ_STORE_UNIT_SIZE;// 物理偏移量
         if (offset >= this.getMinLogicOffset()) {
             MappedFile mappedFile = this.mappedFileQueue.findMappedFileByOffset(offset);
             if (mappedFile != null) {
@@ -493,7 +494,7 @@ public class ConsumeQueue {
                 return result;
             }
         }
-        return null;
+        return null;// 消息已被删除
     }
 
     public ConsumeQueueExt.CqExtUnit getExt(final long offset) {
@@ -517,10 +518,10 @@ public class ConsumeQueue {
     public void setMinLogicOffset(long minLogicOffset) {
         this.minLogicOffset = minLogicOffset;
     }
-
-    public long rollNextFile(final long index) {
+// 当前偏移量 获取下一个文件起始偏移量
+    public long rollNextFile(final long index) {// index??
         int mappedFileSize = this.mappedFileSize;
-        int totalUnitsInFile = mappedFileSize / CQ_STORE_UNIT_SIZE;
+        int totalUnitsInFile = mappedFileSize / CQ_STORE_UNIT_SIZE;// 计算文件中包含了多少个条目
         return index + totalUnitsInFile - index % totalUnitsInFile;
     }
 
@@ -545,7 +546,7 @@ public class ConsumeQueue {
         this.minLogicOffset = 0;
         this.mappedFileQueue.destroy();
         if (isExtReadEnable()) {
-            this.consumeQueueExt.destroy();
+            this.consumeQueueExt.destroy();// 目录下所有文件删除
         }
     }
 

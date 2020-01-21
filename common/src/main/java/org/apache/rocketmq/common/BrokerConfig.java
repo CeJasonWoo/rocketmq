@@ -24,7 +24,7 @@ import org.apache.rocketmq.common.constant.PermName;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
-
+// Jason
 public class BrokerConfig {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.COMMON_LOGGER_NAME);
 
@@ -43,7 +43,7 @@ public class BrokerConfig {
     private int brokerPermission = PermName.PERM_READ | PermName.PERM_WRITE;
     private int defaultTopicQueueNums = 8;
     @ImportantField
-    private boolean autoCreateTopicEnable = true;
+    private boolean autoCreateTopicEnable = true;// 找不到主题时, true会返回路由信息 false会抛出异常
 
     private boolean clusterTopicEnable = true;
 

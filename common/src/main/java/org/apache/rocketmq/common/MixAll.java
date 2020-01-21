@@ -43,7 +43,7 @@ import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.common.help.FAQUrl;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
-
+// Jason 混合所有?
 public class MixAll {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.COMMON_LOGGER_NAME);
 
@@ -78,7 +78,7 @@ public class MixAll {
     public static final List<String> LOCAL_INET_ADDRESS = getLocalInetAddress();
     public static final String LOCALHOST = localhost();
     public static final String DEFAULT_CHARSET = "UTF-8";
-    public static final long MASTER_ID = 0L;
+    public static final long MASTER_ID = 0L;// 主
     public static final long CURRENT_JVM_PID = getPID();
 
     public static final String RETRY_GROUP_TOPIC_PREFIX = "%RETRY%";

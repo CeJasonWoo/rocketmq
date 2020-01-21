@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 package org.apache.rocketmq.client.impl;
-
+// Jason
 public class FindBrokerResult {
-    private final String brokerAddr;
-    private final boolean slave;
-    private final int brokerVersion;
+    private final String brokerAddr;// Jason 地址
+    private final boolean slave;// 主从
+    private final int brokerVersion;// 版本
 
     public FindBrokerResult(String brokerAddr, boolean slave) {
         this.brokerAddr = brokerAddr;

@@ -18,7 +18,7 @@ package org.apache.rocketmq.broker.longpolling;
 
 import java.util.ArrayList;
 import java.util.List;
-
+// TODO: 2019/11/11 JasonWoo 存在并发?
 public class ManyPullRequest {
     private final ArrayList<PullRequest> pullRequestList = new ArrayList<>();
 

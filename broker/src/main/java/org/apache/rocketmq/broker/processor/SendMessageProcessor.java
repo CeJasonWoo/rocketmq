@@ -53,7 +53,7 @@ import org.apache.rocketmq.store.MessageExtBrokerInner;
 import org.apache.rocketmq.store.PutMessageResult;
 import org.apache.rocketmq.store.config.StorePathConfigHelper;
 import org.apache.rocketmq.store.stats.BrokerStatsManager;
-
+// TODO: 2019/10/24 JasonWoo 消息发送实现是怎么调到SendMessageProcessor 类的?
 public class SendMessageProcessor extends AbstractSendMessageProcessor implements NettyRequestProcessor {
 
     private List<ConsumeMessageHook> consumeMessageHookList;
@@ -250,7 +250,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         response.setRemark("putMessageResult is null");
         return response;
     }
-
+// TODO: 2019/10/24 JasonWoo  延迟队列 稍后再看 你跑不掉的!!!
     private boolean handleRetryAndDLQ(SendMessageRequestHeader requestHeader, RemotingCommand response,
                                       RemotingCommand request,
                                       MessageExt msg, TopicConfig topicConfig) {
@@ -318,7 +318,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         }
 
         response.setCode(-1);
-        super.msgCheck(ctx, requestHeader, response);
+        super.msgCheck(ctx, requestHeader, response);// 消息发送检查
         if (response.getCode() != -1) {
             return response;
         }
@@ -326,7 +326,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         final byte[] body = request.getBody();
 
         int queueIdInt = requestHeader.getQueueId();
-        TopicConfig topicConfig = this.brokerController.getTopicConfigManager().selectTopicConfig(requestHeader.getTopic());
+        TopicConfig topicConfig = this.brokerController.getTopicConfigManager().selectTopicConfig(requestHeader.getTopic());// 再次拿主题配置?
 
         if (queueIdInt < 0) {
             queueIdInt = Math.abs(this.random.nextInt() % 99999999) % topicConfig.getWriteQueueNums();
@@ -335,7 +335,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         MessageExtBrokerInner msgInner = new MessageExtBrokerInner();
         msgInner.setTopic(requestHeader.getTopic());
         msgInner.setQueueId(queueIdInt);
-
+// 达到最大重试次数 进入延迟队列
         if (!handleRetryAndDLQ(requestHeader, response, request, msgInner, topicConfig)) {
             return response;
         }
@@ -361,7 +361,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             }
             putMessageResult = this.brokerController.getTransactionalMessageService().prepareMessage(msgInner);
         } else {
-            putMessageResult = this.brokerController.getMessageStore().putMessage(msgInner);
+            putMessageResult = this.brokerController.getMessageStore().putMessage(msgInner);// 消息存储
         }
 
         return handlePutMessageResult(putMessageResult, response, request, msgInner, responseHeader, sendMessageContext, ctx, queueIdInt);

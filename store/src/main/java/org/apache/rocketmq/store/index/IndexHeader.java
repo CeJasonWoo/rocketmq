@@ -19,7 +19,7 @@ package org.apache.rocketmq.store.index;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
+// Jason
 public class IndexHeader {
     public static final int INDEX_HEADER_SIZE = 40;
     private static int beginTimestampIndex = 0;
@@ -35,7 +35,7 @@ public class IndexHeader {
     private AtomicLong endPhyOffset = new AtomicLong(0);
     private AtomicInteger hashSlotCount = new AtomicInteger(0);
 
-    private AtomicInteger indexCount = new AtomicInteger(1);
+    private AtomicInteger indexCount = new AtomicInteger(1);// 已使用条目数量
 
     public IndexHeader(final ByteBuffer byteBuffer) {
         this.byteBuffer = byteBuffer;

@@ -52,7 +52,7 @@ import org.apache.rocketmq.remoting.exception.RemotingCommandException;
 import org.apache.rocketmq.remoting.netty.NettyRequestProcessor;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 import org.apache.rocketmq.store.MessageExtBrokerInner;
-
+// Jason
 public abstract class AbstractSendMessageProcessor implements NettyRequestProcessor {
     protected static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
 
@@ -161,17 +161,17 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
         }
         return response;
     }
-
+// Jason 消息发送检查
     protected RemotingCommand msgCheck(final ChannelHandlerContext ctx,
         final SendMessageRequestHeader requestHeader, final RemotingCommand response) {
-        if (!PermName.isWriteable(this.brokerController.getBrokerConfig().getBrokerPermission())
+        if (!PermName.isWriteable(this.brokerController.getBrokerConfig().getBrokerPermission()) // 写权限
             && this.brokerController.getTopicConfigManager().isOrderTopic(requestHeader.getTopic())) {
             response.setCode(ResponseCode.NO_PERMISSION);
             response.setRemark("the broker[" + this.brokerController.getBrokerConfig().getBrokerIP1()
                 + "] sending message is forbidden");
             return response;
         }
-        if (!this.brokerController.getTopicConfigManager().isTopicCanSendMessage(requestHeader.getTopic())) {
+        if (!this.brokerController.getTopicConfigManager().isTopicCanSendMessage(requestHeader.getTopic())) {// 默认topic不能发送, 仅供路由查找
             String errorMsg = "the topic[" + requestHeader.getTopic() + "] is conflict with system reserved words.";
             log.warn(errorMsg);
             response.setCode(ResponseCode.SYSTEM_ERROR);
@@ -179,7 +179,7 @@ public abstract class AbstractSendMessageProcessor implements NettyRequestProces
             return response;
         }
 
-        TopicConfig topicConfig =
+        TopicConfig topicConfig =// 存储topic的配置信息
             this.brokerController.getTopicConfigManager().selectTopicConfig(requestHeader.getTopic());
         if (null == topicConfig) {
             int topicSysFlag = 0;

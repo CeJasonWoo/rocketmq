@@ -105,7 +105,7 @@ import org.apache.rocketmq.store.config.MessageStoreConfig;
 import org.apache.rocketmq.store.dledger.DLedgerCommitLog;
 import org.apache.rocketmq.store.stats.BrokerStats;
 import org.apache.rocketmq.store.stats.BrokerStatsManager;
-
+// Jason
 public class BrokerController {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
     private static final InternalLogger LOG_PROTECTION = InternalLoggerFactory.getLogger(LoggerName.PROTECTION_LOGGER_NAME);
@@ -120,7 +120,7 @@ public class BrokerController {
     private final ProducerManager producerManager;
     private final ClientHousekeepingService clientHousekeepingService;
     private final PullMessageProcessor pullMessageProcessor;
-    private final PullRequestHoldService pullRequestHoldService;
+    private final PullRequestHoldService pullRequestHoldService;// Jason 挂起 线程
     private final MessageArrivingListener messageArrivingListener;
     private final Broker2Client broker2Client;
     private final SubscriptionGroupManager subscriptionGroupManager;
@@ -873,7 +873,7 @@ public class BrokerController {
                     log.error("registerBrokerAll Exception", e);
                 }
             }
-        }, 1000 * 10, Math.max(10000, Math.min(brokerConfig.getRegisterNameServerPeriod(), 60000)), TimeUnit.MILLISECONDS);
+        }, 1000 * 10, Math.max(10000, Math.min(brokerConfig.getRegisterNameServerPeriod(), 60000)), TimeUnit.MILLISECONDS); // Jason 向NameServer发送心跳包 30s
 
         if (this.brokerStatsManager != null) {
             this.brokerStatsManager.start();

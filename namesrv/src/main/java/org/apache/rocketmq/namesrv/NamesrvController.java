@@ -38,7 +38,7 @@ import org.apache.rocketmq.remoting.netty.NettyServerConfig;
 import org.apache.rocketmq.remoting.netty.TlsSystemConfig;
 import org.apache.rocketmq.srvutil.FileWatchService;
 
-
+// Jason
 public class NamesrvController {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
 
@@ -47,8 +47,8 @@ public class NamesrvController {
     private final NettyServerConfig nettyServerConfig;
 
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl(
-        "NSScheduledThread"));
-    private final KVConfigManager kvConfigManager;
+        "NSScheduledThread")); // 单线程池 定时调度线程池
+    private final KVConfigManager kvConfigManager;// TODO: 2019/10/21 JasonWoo // KV配置 有何用
     private final RouteInfoManager routeInfoManager;
 
     private RemotingServer remotingServer;
@@ -58,7 +58,7 @@ public class NamesrvController {
     private ExecutorService remotingExecutor;
 
     private Configuration configuration;
-    private FileWatchService fileWatchService;
+    private FileWatchService fileWatchService;// TODO: 2019/10/21 JasonWoo 文件监听?
 
     public NamesrvController(NamesrvConfig namesrvConfig, NettyServerConfig nettyServerConfig) {
         this.namesrvConfig = namesrvConfig;
@@ -90,7 +90,7 @@ public class NamesrvController {
             public void run() {
                 NamesrvController.this.routeInfoManager.scanNotActiveBroker();
             }
-        }, 5, 10, TimeUnit.SECONDS);
+        }, 5, 10, TimeUnit.SECONDS);// 心跳检测 移除没激活的broker
 
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
@@ -98,7 +98,7 @@ public class NamesrvController {
             public void run() {
                 NamesrvController.this.kvConfigManager.printAllPeriodically();
             }
-        }, 1, 10, TimeUnit.MINUTES);
+        }, 1, 10, TimeUnit.MINUTES);// 心跳检测 打印KV配置
 
         if (TlsSystemConfig.tlsMode != TlsMode.DISABLED) {
             // Register a listener to reload SslContext
