@@ -80,16 +80,17 @@ public class MappedFileQueue {
         if (null == mfs)
             return null;
 
-        for (int i = 0; i < mfs.length; i++) {// 从映射文件列表的第一个文件开始找
+        for (int i = 0; i < mfs.length; i++) {// 从映射文件列表的第一个文件开始找 最早的文件开始
             MappedFile mappedFile = (MappedFile) mfs[i];
             if (mappedFile.getLastModifiedTimestamp() >= timestamp) {// 最后一次更新时间 > 查找时间戳 返回
-                return mappedFile;// TODO: 2019/10/25 JasonWoo 只返回一个符合条件的映射文件? 其他的文件呢?
+                return mappedFile;// 2019/10/25 JasonWoo 只返回一个符合条件的映射文件? 其他的文件呢? | 从最早的文件开始找起
             }
         }
 
         return (MappedFile) mfs[mfs.length - 1];// 不存在 返回最后一个文件
     }
 
+    // TODO: 2020/9/8 JasonWoo reservedMappedFiles 这个参数有何意义?
     private Object[] copyMappedFiles(final int reservedMappedFiles) {
         Object[] mfs;
 
@@ -195,21 +196,25 @@ public class MappedFileQueue {
         long createOffset = -1;
         MappedFile mappedFileLast = getLastMappedFile();
 
+        // 文件不存在
         if (mappedFileLast == null) {
+            // startOffset 调整为 mappedFileSize 的整数倍
             createOffset = startOffset - (startOffset % this.mappedFileSize);
         }
-
+        // 文件已写满
         if (mappedFileLast != null && mappedFileLast.isFull()) {
             createOffset = mappedFileLast.getFileFromOffset() + this.mappedFileSize;
         }
 
         if (createOffset != -1 && needCreate) {
+            // 一次创建两个文件 为了提升性能
             String nextFilePath = this.storePath + File.separator + UtilAll.offset2FileName(createOffset);
             String nextNextFilePath = this.storePath + File.separator
                 + UtilAll.offset2FileName(createOffset + this.mappedFileSize);
             MappedFile mappedFile = null;
-
+// ================================================
             if (this.allocateMappedFileService != null) {
+                // Jason 创建请求放入优先队列, 因为上面有两个创建文件的请求
                 mappedFile = this.allocateMappedFileService.putRequestAndReturnMappedFile(nextFilePath,
                     nextNextFilePath, this.mappedFileSize);
             } else {
@@ -298,7 +303,7 @@ public class MappedFileQueue {
         }
         return -1;
     }
-// 获取最大偏移量 最后一个文件的fileFromOffset + 文件当前的写指针
+// 获取最大偏移量
     public long getMaxOffset() {
         MappedFile mappedFile = getLastMappedFile();
         if (mappedFile != null) {
@@ -306,7 +311,7 @@ public class MappedFileQueue {
         }
         return 0;
     }
-// 文件当前的写指针
+// 文件当前的写指针  最后一个文件的fileFromOffset + 文件当前的写指针
     public long getMaxWrotePosition() {
         MappedFile mappedFile = getLastMappedFile();
         if (mappedFile != null) {
@@ -451,7 +456,7 @@ public class MappedFileQueue {
 
         return result;
     }
-// 根据消息偏移量 查找 映射文件
+// 根据消息偏移量(逻辑offset) 查找 映射文件(consumeQueue文件)
     /**
      * Finds a mapped file by offset.
      *
@@ -472,12 +477,37 @@ public class MappedFileQueue {
                         this.mappedFileSize,
                         this.mappedFiles.size());
                 } else {
-                    int index = (int) ((offset / this.mappedFileSize) - (firstMappedFile.getFileFromOffset() / this.mappedFileSize));// todo 定位映射文件的算法
+// Jason 过期的文件会被删除, 所以要减去 firstMappedFileFromOffset
+                    // mappedFileSize = 10
+                    // mappedFiles = [0 10 20 30]
+                    // offset = [12 22 32]
+                    // 12/10=1 22/10=2 32/10=3
+                    // 过期文件被删除后 mappedFiles = 20 30 40
+                    // offset = [12 22 32] 22/10=2 显然2是错误的文件定位 所以呢: 22/10-20/10=0 33/10-20/10=1
+                    int index = (int) ((offset / this.mappedFileSize) - (firstMappedFile.getFileFromOffset() / this.mappedFileSize));// Jason 定位映射文件的算法
                     MappedFile targetFile = null;
                     try {
                         targetFile = this.mappedFiles.get(index);
                     } catch (Exception ignored) {
                     }
+// 2020/9/28 JasonWoo 这里为何还要加这个判断 难道上面定位算法不准?
+// Jason fileFromOffset < offset < fileFromOffset + mappedFileSize
+// 查找的文件时, 刚刚好过期被删除, 这个时候 映射文件的定位已经是错误的了 比如原来的index=1 现在已经变成了index 0, 再去拿index 1 可能就会导致 MappedFile 返回null
+
+// https://issues.apache.org/jira/browse/ROCKETMQ-332
+
+//In RocketMQ V3.5.8, there is a readWriteLock in com.alibaba.rocketmq.store.MapedFileQueue, which guarantee thread safety. But in the new org.apache.rocketmq.store.MappedFileQueue, there is not any concurrent control mechanism.
+//==========
+//when consumer is fetching message(no large lag), broker calls
+//org.apache.rocketmq.broker.processor.PullMessageProcessor#processRequest ==>
+//org.apache.rocketmq.store.DefaultMessageStore#getMessage ==>
+//org.apache.rocketmq.store.ConsumeQueue#getIndexBuffer ==>
+//org.apache.rocketmq.store.MappedFileQueue#findMappedFileByOffset
+//==========
+//but findMappedFileByOffset is not thread safe, as
+//org.apache.rocketmq.store.MappedFileQueue#deleteExpiredFile maybe running concurrently( the size of mappedFiles maybe change) , which will results in ConsumeQueue#getIndexBuffer returns null, causing
+//nextBeginOffset = nextOffsetCorrection(offset, consumeQueue.rollNextFile(offset));+
+//which will skip the whole consumeQueue file, any messages left in this ConsumeQueue will not be consumed by client.
 
                     if (targetFile != null && offset >= targetFile.getFileFromOffset()
                         && offset < targetFile.getFileFromOffset() + this.mappedFileSize) {

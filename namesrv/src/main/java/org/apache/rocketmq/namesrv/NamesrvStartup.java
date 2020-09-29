@@ -85,6 +85,7 @@ public class NamesrvStartup {
         if (commandLine.hasOption('c')) {
             String file = commandLine.getOptionValue('c');
             if (file != null) {
+// ================================================================================================
                 InputStream in = new BufferedInputStream(new FileInputStream(file)); // 加载配置文件
                 properties = new Properties();
                 properties.load(in);
@@ -136,21 +137,21 @@ public class NamesrvStartup {
         if (null == controller) {
             throw new IllegalArgumentException("NamesrvController is null");
         }
-
+// ===================================================================================
         boolean initResult = controller.initialize();
         if (!initResult) {
             controller.shutdown();
             System.exit(-3);
         }
-
+// 优雅停机 释放线程池
         Runtime.getRuntime().addShutdownHook(new ShutdownHookThread(log, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 controller.shutdown();
                 return null;
             }
-        }));// 优雅停机 释放线程池
-
+        }));
+// ====================================================================================
         controller.start();
 
         return controller;

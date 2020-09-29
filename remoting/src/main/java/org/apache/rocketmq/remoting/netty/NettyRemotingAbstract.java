@@ -208,6 +208,7 @@ public abstract class NettyRemotingAbstract {
                                 response.setOpaque(opaque);
                                 response.markResponseType();
                                 try {
+// ============================================================================================
                                     ctx.writeAndFlush(response);
                                 } catch (Throwable e) {
                                     log.error("process request over, but response failed", e);
@@ -241,6 +242,8 @@ public abstract class NettyRemotingAbstract {
             }
 
             try {
+
+// ============================================================================================
                 final RequestTask requestTask = new RequestTask(run, ctx.channel(), cmd);
                 pair.getObject2().submit(requestTask);
             } catch (RejectedExecutionException e) {
@@ -554,6 +557,7 @@ public abstract class NettyRemotingAbstract {
         }
     }
 
+    // TODO: 2020/6/28 JasonWoo 这里为何要自己定义线程池
     class NettyEventExecutor extends ServiceThread {
         private final LinkedBlockingQueue<NettyEvent> eventQueue = new LinkedBlockingQueue<NettyEvent>();
         private final int maxSize = 10000;

@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 /**
+ * 新增了重置
  * Add reset feature for @see java.util.concurrent.CountDownLatch
  */
 public class CountDownLatch2 {

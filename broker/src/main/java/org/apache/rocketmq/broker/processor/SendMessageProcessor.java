@@ -53,7 +53,8 @@ import org.apache.rocketmq.store.MessageExtBrokerInner;
 import org.apache.rocketmq.store.PutMessageResult;
 import org.apache.rocketmq.store.config.StorePathConfigHelper;
 import org.apache.rocketmq.store.stats.BrokerStatsManager;
-// TODO: 2019/10/24 JasonWoo 消息发送实现是怎么调到SendMessageProcessor 类的?
+// 2019/10/24 JasonWoo 消息发送实现是怎么调到SendMessageProcessor 类的?
+// @see BrokerController#registerProcessor
 public class SendMessageProcessor extends AbstractSendMessageProcessor implements NettyRequestProcessor {
 
     private List<ConsumeMessageHook> consumeMessageHookList;

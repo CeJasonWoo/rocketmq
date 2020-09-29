@@ -77,28 +77,33 @@ public class NamesrvController {
 
         this.kvConfigManager.load();
 
+        // Netty服务
         this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.brokerHousekeepingService);
 
+        // 线程池
         this.remotingExecutor =
             Executors.newFixedThreadPool(nettyServerConfig.getServerWorkerThreads(), new ThreadFactoryImpl("RemotingExecutorThread_"));
-
+// 请求事件处理器
+// =======================================================================================
         this.registerProcessor();
 
+        // 心跳检测 移除没激活的broker
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
             public void run() {
                 NamesrvController.this.routeInfoManager.scanNotActiveBroker();
             }
-        }, 5, 10, TimeUnit.SECONDS);// 心跳检测 移除没激活的broker
+        }, 5, 10, TimeUnit.SECONDS);
 
+        // 心跳检测 打印KV配置
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
             public void run() {
                 NamesrvController.this.kvConfigManager.printAllPeriodically();
             }
-        }, 1, 10, TimeUnit.MINUTES);// 心跳检测 打印KV配置
+        }, 1, 10, TimeUnit.MINUTES);
 
         if (TlsSystemConfig.tlsMode != TlsMode.DISABLED) {
             // Register a listener to reload SslContext
@@ -153,6 +158,7 @@ public class NamesrvController {
     }
 
     public void start() throws Exception {
+        // ============================
         this.remotingServer.start();
 
         if (this.fileWatchService != null) {

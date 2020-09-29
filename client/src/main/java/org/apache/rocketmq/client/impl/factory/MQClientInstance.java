@@ -242,6 +242,7 @@ public class MQClientInstance {
                     // Start rebalance service
                     this.rebalanceService.start();
                     // Start push service
+                    // TODO: 2020/7/24 JasonWoo 为何这里会重复调用 start
                     this.defaultMQProducer.getDefaultMQProducerImpl().start(false);
                     log.info("the client factory [{}] start OK", this.clientId);
                     this.serviceState = ServiceState.RUNNING;
@@ -617,6 +618,8 @@ public class MQClientInstance {
                     if (isDefault && defaultMQProducer != null) {// 第二次进来 | isDefault = true, 使用默认主题查询
                         topicRouteData = this.mQClientAPIImpl.getDefaultTopicRouteInfoFromNameServer(defaultMQProducer.getCreateTopicKey(),
                             1000 * 3);
+                        log.info("====================第二次进来 && isDefault = {} topic = {} 路由信息 = {}",
+                                isDefault, defaultMQProducer.getCreateTopicKey(), topicRouteData);
                         if (topicRouteData != null) {
                             for (QueueData data : topicRouteData.getQueueDatas()) {
                                 int queueNums = Math.min(defaultMQProducer.getDefaultTopicQueueNums(), data.getReadQueueNums());
@@ -626,6 +629,7 @@ public class MQClientInstance {
                         }
                     } else {// 没有缓存 第1次进来 先根据topic找路由信息
                         topicRouteData = this.mQClientAPIImpl.getTopicRouteInfoFromNameServer(topic, 1000 * 3);
+                        log.info("====================没有缓存 第1次进来 先根据topic={} 找路由信息 {}", topic, topicRouteData);
                     }
                     if (topicRouteData != null) {// 找到nameServer的新路由信息
                         TopicRouteData old = this.topicRouteTable.get(topic);

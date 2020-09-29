@@ -76,7 +76,8 @@ public class TopicPublishInfo {
                 if (pos < 0)
                     pos = 0;
                 MessageQueue mq = this.messageQueueList.get(pos);
-                if (!mq.getBrokerName().equals(lastBrokerName)) {// 规避上次的broker. 该算法存在的问题:如果宕机broker有多个队列, 怎么彻底规避改broker?
+                if (!mq.getBrokerName().equals(lastBrokerName)) {
+                    // 规避上次的broker. 该算法存在的问题:如果宕机broker有多个队列, 怎么彻底规避改broker?
                     return mq;
                 }
             }

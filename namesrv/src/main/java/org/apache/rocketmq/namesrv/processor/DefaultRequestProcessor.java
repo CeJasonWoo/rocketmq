@@ -215,7 +215,8 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
             registerBrokerBody.getTopicConfigSerializeWrapper().getDataVersion().setCounter(new AtomicLong(0));
             registerBrokerBody.getTopicConfigSerializeWrapper().getDataVersion().setTimestamp(0);
         }
-
+        log.info("broker注册 WithFilterServer decode {}", registerBrokerBody.toJson());
+// ==================================================================================================
         RegisterBrokerResult result = this.namesrvController.getRouteInfoManager().registerBroker(
             requestHeader.getClusterName(),
             requestHeader.getBrokerAddr(),
@@ -314,6 +315,7 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
         response.setBody(jsonValue);
         response.setCode(ResponseCode.SUCCESS);
         response.setRemark(null);
+        log.info("broker 注册 {}", response);
         return response;
     }
 
@@ -341,7 +343,7 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
             (GetRouteInfoRequestHeader) request.decodeCommandCustomHeader(GetRouteInfoRequestHeader.class);
 // TODO: 2019/10/23 JasonWoo 没有找到autoCreate相关判断?
         TopicRouteData topicRouteData = this.namesrvController.getRouteInfoManager().pickupTopicRouteData(requestHeader.getTopic());// 填充list信息?
-
+        log.info("===============================路由发现 topic = {} topicRouteData = {}", requestHeader.getTopic(), topicRouteData);
         if (topicRouteData != null) {
             if (this.namesrvController.getNamesrvConfig().isOrderMessageEnable()) {// 顺序消息
                 String orderTopicConf =

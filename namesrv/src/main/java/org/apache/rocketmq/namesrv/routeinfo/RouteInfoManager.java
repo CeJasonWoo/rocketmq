@@ -114,6 +114,7 @@ public class RouteInfoManager {
                 this.lock.writeLock().lockInterruptibly();// 写锁 防止并发修改路由表
 
                 Set<String> brokerNames = this.clusterAddrTable.get(clusterName);
+                log.info("==============clusterName -> brokerNames; {} -> {};", clusterName, brokerNames);
                 if (null == brokerNames) { // broker所属集群不存在
                     brokerNames = new HashSet<String>();
                     this.clusterAddrTable.put(clusterName, brokerNames);
@@ -129,12 +130,14 @@ public class RouteInfoManager {
                     this.brokerAddrTable.put(brokerName, brokerData);
                 }
                 Map<Long, String> brokerAddrsMap = brokerData.getBrokerAddrs();
+                log.info("==============brokerName -> brokerAddrsMap; {} -> {};", brokerName, brokerAddrsMap);
                 //Switch slave to master: first remove <1, IP:PORT> in namesrv, then add <0, IP:PORT>
                 //The same IP:PORT must only have one record in brokerAddrTable
                 Iterator<Entry<Long, String>> it = brokerAddrsMap.entrySet().iterator();
                 while (it.hasNext()) {
                     Entry<Long, String> item = it.next();
-                    if (null != brokerAddr && brokerAddr.equals(item.getValue()) && brokerId != item.getKey()) {
+                    if (null != brokerAddr && brokerAddr.equals(item.getValue()) && brokerId != item.getKey()) { // addr equal, brokerId not equal
+                        log.info("==============Switch slave to master");
                         it.remove();
                     }
                 }
@@ -146,6 +149,7 @@ public class RouteInfoManager {
                     && MixAll.MASTER_ID == brokerId) {// 如果broker是master
                     if (this.isBrokerTopicConfigChanged(brokerAddr, topicConfigWrapper.getDataVersion()) // topic配置发生变化
                         || registerFirst) {// 首次注册
+                        log.info("==============topic配置发生变化 || 首次注册 {}", registerFirst);
                         ConcurrentMap<String, TopicConfig> tcTable =
                             topicConfigWrapper.getTopicConfigTable();
                         if (tcTable != null) {
@@ -162,6 +166,7 @@ public class RouteInfoManager {
                         topicConfigWrapper.getDataVersion(),
                         channel,
                         haServerAddr));// 存活broker信息表 | 执行路由删除的依据
+                log.info("==============brokerAddr -> BrokerLiveInf; {} -> {};", brokerAddr, prevBrokerLiveInfo);
                 if (null == prevBrokerLiveInfo) {
                     log.info("new broker registered, {} HAServer: {}", brokerAddr, haServerAddr);
                 }
@@ -227,7 +232,7 @@ public class RouteInfoManager {
             queueDataList = new LinkedList<QueueData>();
             queueDataList.add(queueData);
             this.topicQueueTable.put(topicConfig.getTopicName(), queueDataList);
-            log.info("new topic registered, {} {}", topicConfig.getTopicName(), queueData);
+            log.info("==============================new topic registered, {} {}", topicConfig.getTopicName(), queueData);
         } else {
             boolean addNewOne = true;
 
@@ -238,8 +243,8 @@ public class RouteInfoManager {
                     if (qd.equals(queueData)) {
                         addNewOne = false;
                     } else {
-                        log.info("topic changed, {} OLD: {} NEW: {}", topicConfig.getTopicName(), qd,
-                            queueData);
+                        log.info("topic changed, {} OLD: {} NEW: {}",
+                                topicConfig.getTopicName(), qd, queueData);
                         it.remove();
                     }
                 }
@@ -385,6 +390,7 @@ public class RouteInfoManager {
         try {
             try {
                 this.lock.readLock().lockInterruptibly();
+// ============================================================================
                 List<QueueData> queueDataList = this.topicQueueTable.get(topic);
                 if (queueDataList != null) {
                     topicRouteData.setQueueDatas(queueDataList);
@@ -399,8 +405,9 @@ public class RouteInfoManager {
                     for (String brokerName : brokerNameSet) {
                         BrokerData brokerData = this.brokerAddrTable.get(brokerName);
                         if (null != brokerData) {
-                            BrokerData brokerDataClone = new BrokerData(brokerData.getCluster(), brokerData.getBrokerName(), (HashMap<Long, String>) brokerData
-                                .getBrokerAddrs().clone());
+                            BrokerData brokerDataClone = new BrokerData(brokerData.getCluster(),
+                                    brokerData.getBrokerName(),
+                                    (HashMap<Long, String>) brokerData.getBrokerAddrs().clone());
                             brokerDataList.add(brokerDataClone);
                             foundBrokerData = true;
                             for (final String brokerAddr : brokerDataClone.getBrokerAddrs().values()) {

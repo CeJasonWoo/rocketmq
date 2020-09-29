@@ -74,6 +74,7 @@ public class TopAddressing {
             if (200 == result.code) {
                 String responseStr = result.content;
                 if (responseStr != null) {
+                    log.info("fetchNSAddr " + responseStr);
                     return clearNewLine(responseStr);
                 } else {
                     log.error("fetch nameserver address is null");

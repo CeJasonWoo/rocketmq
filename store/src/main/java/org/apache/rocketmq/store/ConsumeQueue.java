@@ -28,7 +28,7 @@ import org.apache.rocketmq.store.config.StorePathConfigHelper;
 public class ConsumeQueue {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
-    public static final int CQ_STORE_UNIT_SIZE = 20;
+    public static final int CQ_STORE_UNIT_SIZE = 20; // Jason 每条ConsumeQueue消息的大小 8物理偏移量 4消息长度 8tagHashCode
     private static final InternalLogger LOG_ERROR = InternalLoggerFactory.getLogger(LoggerName.STORE_ERROR_LOGGER_NAME);
 
     private final DefaultMessageStore defaultMessageStore;
@@ -160,18 +160,18 @@ public class ConsumeQueue {
             int high = 0;
             int midOffset = -1, targetOffset = -1, leftOffset = -1, rightOffset = -1;
             long leftIndexValue = -1L, rightIndexValue = -1L;
-            long minPhysicOffset = this.defaultMessageStore.getMinPhyOffset();// 有效物理偏移量
+            long minPhysicOffset = this.defaultMessageStore.getMinPhyOffset();// 有效物理偏移量 第一个文件的偏移量
             SelectMappedBufferResult sbr = mappedFile.selectMappedBuffer(0);
             if (null != sbr) {
                 ByteBuffer byteBuffer = sbr.getByteBuffer();
-                high = byteBuffer.limit() - CQ_STORE_UNIT_SIZE;
+                high = byteBuffer.limit() - CQ_STORE_UNIT_SIZE; // TODO: 2020/9/7 JasonWoo 为何要减去?
                 try {
                     while (high >= low) {
                         midOffset = (low + high) / (2 * CQ_STORE_UNIT_SIZE) * CQ_STORE_UNIT_SIZE;//mid
                         byteBuffer.position(midOffset);
-                        long phyOffset = byteBuffer.getLong();
-                        int size = byteBuffer.getInt();
-                        if (phyOffset < minPhysicOffset) {// mid < 最小物理偏移量
+                        long phyOffset = byteBuffer.getLong(); // 8 物理偏移量
+                        int size = byteBuffer.getInt(); // 4 消息长度
+                        if (phyOffset < minPhysicOffset) {// mid < 最小物理偏移量 [low, high]
                             low = midOffset + CQ_STORE_UNIT_SIZE;
                             leftOffset = midOffset;
                             continue;
@@ -483,13 +483,19 @@ public class ConsumeQueue {
             mappedFile.appendMessage(byteBuffer.array());
         }
     }
-// 获取消息 消费队列 条目
+// 获取消息 队列offset
     public SelectMappedBufferResult getIndexBuffer(final long startIndex) {
         int mappedFileSize = this.mappedFileSize;
-        long offset = startIndex * CQ_STORE_UNIT_SIZE;// 物理偏移量
+        long offset = startIndex * CQ_STORE_UNIT_SIZE;// 队列offset * 20 = 逻辑offset
         if (offset >= this.getMinLogicOffset()) {
+            // 根据 逻辑offset 定位到具体的file
             MappedFile mappedFile = this.mappedFileQueue.findMappedFileByOffset(offset);
             if (mappedFile != null) {
+                // 从 file 中去出 逻辑offset后面的message索引
+                // JasonWoo 这里的取模是什么意思?
+                // mappedFileSize = 10
+                // mappedFiles = [0 10 20 30]
+                // offset = [12 22 32] 12%10=2 22%10=2 32%10=2 所以这个取模可以算出单个文件的偏移量
                 SelectMappedBufferResult result = mappedFile.selectMappedBuffer((int) (offset % mappedFileSize));
                 return result;
             }

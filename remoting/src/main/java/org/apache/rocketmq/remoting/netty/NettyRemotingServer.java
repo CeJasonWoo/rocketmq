@@ -74,6 +74,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
     private final ChannelEventListener channelEventListener;
 
     private final Timer timer = new Timer("ServerHouseKeepingService", true);
+// Netty 业务线程池
     private DefaultEventExecutorGroup defaultEventExecutorGroup;
 
 
@@ -236,6 +237,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             this.nettyEventExecutor.start();
         }
 
+// ===============================================================================================================
         this.timer.scheduleAtFixedRate(new TimerTask() {
 
             @Override
@@ -300,6 +302,8 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
     @Override
     public void registerDefaultProcessor(NettyRequestProcessor processor, ExecutorService executor) {
+// @see NamesrvController#registerProcessor
+// ==============================================================================
         this.defaultRequestProcessor = new Pair<NettyRequestProcessor, ExecutorService>(processor, executor);
     }
 

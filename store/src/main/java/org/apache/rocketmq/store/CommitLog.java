@@ -593,6 +593,7 @@ public class CommitLog {
             }
 // 追加消息到缓存
             result = mappedFile.appendMessage(msg, this.appendMessageCallback);
+log.info("=============追加消息到缓存 result = {}", result);
             switch (result.getStatus()) {
                 case PUT_OK:
                     break;
@@ -639,7 +640,7 @@ public class CommitLog {
         // Statistics
         storeStatsService.getSinglePutMessageTopicTimesTotal(msg.getTopic()).incrementAndGet();
         storeStatsService.getSinglePutMessageTopicSizeTotal(topic).addAndGet(result.getWroteBytes());
-
+// =============================================
         handleDiskFlush(result, putMessageResult, msg);// 同步刷盘 异步刷盘
         handleHA(result, putMessageResult, msg);// todo HA 主从同步复制
 
@@ -652,6 +653,7 @@ public class CommitLog {
             final GroupCommitService service = (GroupCommitService) this.flushCommitLogService;
             if (messageExt.isWaitStoreMsgOK()) {
                 GroupCommitRequest request = new GroupCommitRequest(result.getWroteOffset() + result.getWroteBytes());// 同步任务
+// ===============================================
                 service.putRequest(request);
                 boolean flushOK = request.waitForFlush(this.defaultMessageStore.getMessageStoreConfig().getSyncFlushTimeout());// 等待任务完成
                 if (!flushOK) {
@@ -828,10 +830,13 @@ public class CommitLog {
         return -1;
     }
 
+    // 物理offset
     public SelectMappedBufferResult getMessage(final long offset, final int size) {
         int mappedFileSize = this.defaultMessageStore.getMessageStoreConfig().getMappedFileSizeCommitLog();
+        // 根据 物理offset 读取到相关的file
         MappedFile mappedFile = this.mappedFileQueue.findMappedFileByOffset(offset, offset == 0);
         if (mappedFile != null) {
+            // 读取出真实消息内容
             int pos = (int) (offset % mappedFileSize);
             return mappedFile.selectMappedBuffer(pos, size);
         }
@@ -996,6 +1001,7 @@ public class CommitLog {
                     }
 
                     long begin = System.currentTimeMillis();
+//  =====================================
                     CommitLog.this.mappedFileQueue.flush(flushPhysicQueueLeastPages);
                     long storeTimestamp = CommitLog.this.mappedFileQueue.getStoreTimestamp();
                     if (storeTimestamp > 0) {
@@ -1197,6 +1203,7 @@ public class CommitLog {
             // STORETIMESTAMP + STOREHOSTADDRESS + OFFSET <br>
 
             // PHY OFFSET
+            // Jason mappedFile文件名 初始偏移量 + 可以写的位值
             long wroteOffset = fileFromOffset + byteBuffer.position();
 
             this.resetByteBuffer(hostHolder, 8);
@@ -1255,13 +1262,16 @@ public class CommitLog {
                     + ", maxMessageSize: " + this.maxMessageSize);
                 return new AppendMessageResult(AppendMessageStatus.MESSAGE_SIZE_EXCEEDED);
             }
-// 消息长度 大于 commitLog文件空闲空间  返回END_OF_FILE broker会创建新的文件
+// Jason 消息长度 大于 commitLog文件空闲空间  返回END_OF_FILE broker会创建新的文件
+            // 一条消息不能跨越两个文件
+            // 每个文件结尾都会预留8个字节
+            // 消息长度 + 预留8字节 > 文件剩余空间
             // Determines whether there is sufficient free space
             if ((msgLen + END_FILE_MIN_BLANK_LENGTH) > maxBlank) {
                 this.resetByteBuffer(this.msgStoreItemMemory, maxBlank);
                 // 1 TOTALSIZE commitLog文件存储空闲空间
                 this.msgStoreItemMemory.putInt(maxBlank);
-                // 2 MAGICCODE commitLog文件存储魔数 todo 魔数是什么?
+                // 2 MAGICCODE commitLog文件存储魔数 | Jason 魔数是什么? 文件结尾标识, 读到魔数就知道到了文件结尾!
                 this.msgStoreItemMemory.putInt(CommitLog.BLANK_MAGIC_CODE);
                 // 3 The remaining space may be any value
                 // Here the length of the specially set maxBlank
@@ -1329,7 +1339,7 @@ public class CommitLog {
                     break;
                 case MessageSysFlag.TRANSACTION_NOT_TYPE:
                 case MessageSysFlag.TRANSACTION_COMMIT_TYPE:
-                    // The next update ConsumeQueue information  todo 更新消息逻辑偏移量 ?
+                    // The next update ConsumeQueue information  | Jason 更新消息在队列中的逻辑偏移量
                     CommitLog.this.topicQueueTable.put(key, ++queueOffset);
                     break;
                 default:
@@ -1363,6 +1373,7 @@ public class CommitLog {
             this.resetByteBuffer(hostHolder, 8);
             ByteBuffer storeHostBytes = messageExtBatch.getStoreHostBytes(hostHolder);
             messagesByteBuff.mark();
+            // TODO: 2020/8/29 JasonWoo hasRemaining?
             while (messagesByteBuff.hasRemaining()) {
                 // 1 TOTALSIZE
                 final int msgPos = messagesByteBuff.position();

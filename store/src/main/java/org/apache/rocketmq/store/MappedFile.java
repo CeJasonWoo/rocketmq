@@ -41,6 +41,7 @@ import org.apache.rocketmq.store.config.FlushDiskType;
 import org.apache.rocketmq.store.util.LibC;
 import sun.nio.ch.DirectBuffer;
 // Jason 内存映射文件
+// TODO: 2020/9/28 JasonWoo  MappedFile 可以是commitLog文件 也可以是 ConsumeQueue文件?
 public class MappedFile extends ReferenceResource {
     public static final int OS_PAGE_SIZE = 1024 * 4;// 操作系统 每页大小
     protected static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
@@ -296,7 +297,7 @@ public class MappedFile extends ReferenceResource {
 // 映射文件提交 目的:TransientStorePool(writeBuffer)->文件内存(ByteBuffer)
     public int commit(final int commitLeastPages) {
         if (writeBuffer == null) {
-            //no need to commit data to file channel, so just regard wrotePosition as committedPosition. // 堆外内存为空 没有要提交的数据
+            //no need to commit data to file channel, so just regard wrotePosition as committedPosition. // 堆外内存==null 没有要提交的数据
             return this.wrotePosition.get();
         }
         if (this.isAbleToCommit(commitLeastPages)) {
@@ -405,7 +406,7 @@ public class MappedFile extends ReferenceResource {
                 ByteBuffer byteBuffer = this.mappedByteBuffer.slice();// 返回整个文件 [0, ReadPosition]
                 byteBuffer.position(pos);
                 int size = readPosition - pos;
-                ByteBuffer byteBufferNew = byteBuffer.slice();//TODO 这里为何再次slice
+                ByteBuffer byteBufferNew = byteBuffer.slice();// 这里为何再次slice | Jason 同一份内存 不同的指针
                 byteBufferNew.limit(size);
                 return new SelectMappedBufferResult(this.fileFromOffset + pos, byteBufferNew, size, this);
             }

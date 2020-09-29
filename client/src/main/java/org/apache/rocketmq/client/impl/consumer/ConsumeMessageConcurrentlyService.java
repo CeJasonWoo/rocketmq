@@ -156,7 +156,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
         mq.setQueueId(msg.getQueueId());
 
         ConsumeConcurrentlyContext context = new ConsumeConcurrentlyContext(mq);
-
+// TODO: 2020/8/24 JasonWoo 这是干啥?
         this.defaultMQPushConsumerImpl.resetRetryAndNamespace(msgs, this.consumerGroup);
 
         final long beginTime = System.currentTimeMillis();

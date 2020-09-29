@@ -206,7 +206,7 @@ public class BrokerStartup {
             MixAll.printObjectProperties(log, nettyServerConfig);
             MixAll.printObjectProperties(log, nettyClientConfig);
             MixAll.printObjectProperties(log, messageStoreConfig);
-
+// ====
             final BrokerController controller = new BrokerController(
                 brokerConfig,
                 nettyServerConfig,
