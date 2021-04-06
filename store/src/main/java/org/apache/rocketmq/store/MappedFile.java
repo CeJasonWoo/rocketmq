@@ -57,8 +57,8 @@ public class MappedFile extends ReferenceResource {
     /**
      * Message will put to here first, and then reput to FileChannel if writeBuffer is not null.
      */
-    protected ByteBuffer writeBuffer = null;// 堆内存 (transientStorePoolEnable=true, 数据->先放writeBuffer->再放文件内存ByteBuffer)
-    protected TransientStorePool transientStorePool = null;// 堆内存池 transientStorePoolEnable=true启用 transientStorePool -> 多个writeBuffer
+    protected ByteBuffer writeBuffer = null;// 堆外内存 (transientStorePoolEnable=true, 数据->先放writeBuffer->再放文件内存ByteBuffer)
+    protected TransientStorePool transientStorePool = null;// 堆外内存池 transientStorePoolEnable=true启用 transientStorePool -> 多个writeBuffer
     private String fileName;
     private long fileFromOffset;// 文件初始偏移量
     private File file;// 物理文件
@@ -91,7 +91,7 @@ public class MappedFile extends ReferenceResource {
     public static void clean(final ByteBuffer buffer) {
         if (buffer == null || !buffer.isDirect() || buffer.capacity() == 0)
             return;
-        invoke(invoke(viewed(buffer), "cleaner"), "clean");// todo 这一步是什么操作
+        invoke(invoke(viewed(buffer), "cleaner"), "clean");//  这一步是什么操作? 释放内存通用写法
     }
 
     private static Object invoke(final Object target, final String methodName, final Class<?>... args) {
@@ -277,7 +277,7 @@ public class MappedFile extends ReferenceResource {
                 try {
                     //We only append data to fileChannel or mappedByteBuffer, never both.
                     if (writeBuffer != null || this.fileChannel.position() != 0) {
-                        this.fileChannel.force(false);// fileChannel 落盘? 不是已经提交到mappedByteBuffer了吗, 不可以通过mappedByteBuffer落盘?
+                        this.fileChannel.force(false);// TODO fileChannel 落盘? 不是已经提交到mappedByteBuffer了吗, 不可以通过mappedByteBuffer落盘? 优先使用fileChannel比较好?
                     } else {
                         this.mappedByteBuffer.force();// 直接落盘
                     }

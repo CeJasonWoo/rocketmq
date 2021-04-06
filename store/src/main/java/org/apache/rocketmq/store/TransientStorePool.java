@@ -27,7 +27,7 @@ import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.store.config.MessageStoreConfig;
 import org.apache.rocketmq.store.util.LibC;
 import sun.nio.ch.DirectBuffer;
-// Jason 堆内存池 目的:将当前堆外内存一直锁定在内存中, 避免被进程将内存交换到磁盘?
+// Jason 堆外内存池 目的:将当前堆外内存一直锁定在内存中, 避免被进程将内存交换到磁盘?
 public class TransientStorePool {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
